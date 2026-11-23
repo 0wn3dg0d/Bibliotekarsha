@@ -1,0 +1,26 @@
+[plugin]
+id = "com.0wn3df1x.bibliotekarsha"
+name = "Bibliotekarsha (Beta)"
+version = "0.5.0"
+author = "0wn3df1x"
+description = "Бета-версия плагина для библиотеки Steam: умная фильтрация по русской озвучке, субтитрам, умным меткам (по весу и исключениям), годам, отзывам, рейтингу и шаблонам."
+
+[backend]
+entry = "backend/main.lua"
+sources = ["backend/**/*.lua"]
+
+[frontend]
+entry = "frontend/index.tsx"
+
+[compiler]
+output_path = "auto"
+
+[dev]
+auto_restart = true
+reload_steamui_when = "both"
+
+[logger]
+padding = 0
+backend_prefix = "BCK"
+frontend_prefix = "FRT"
+webview_prefix = "WEB"

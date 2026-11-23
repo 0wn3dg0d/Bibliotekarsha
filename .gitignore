@@ -1,0 +1,6 @@
+.millennium/
+node_modules/
+.starlight/
+dist/
+*.star
+.DS_Store
