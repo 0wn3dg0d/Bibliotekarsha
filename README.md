@@ -4,14 +4,14 @@
 
 **Bibliotekarsha** — плагин для клиента Steam (на базе **Millennium 3.6.3+**), добавляющий удобную фильтрацию всей библиотеки и отдельных коллекций по русской озвучке, субтитрам, умным меткам по весу, годам выхода, количеству отзывов и рейтингу.
 
-<a href="https://github.com/0wn3df1x/Bibliotekarsha/releases">
+<a href="https://github.com/0wn3dg0d/Bibliotekarsha/releases">
 <img src="https://img.shields.io/badge/Скачать_с-GitHub_Releases_(v0.5.0_Beta)-blue.svg" alt="Скачать с GitHub Releases">
 </a>
 
 ---
 
 <div align="center">
-<a href="https://0wn3df1x.github.io/Bibliotekarsha/" title="Посмотреть полное описание функций">
+<a href="https://0wn3dg0d.github.io/Bibliotekarsha/" title="Посмотреть полное описание функций">
 <img src="https://i.imgur.com/xHlfHv2.png" alt="Посмотреть полное описание" width="450">
 </a>
 </div>
