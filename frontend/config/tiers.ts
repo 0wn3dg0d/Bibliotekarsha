@@ -2,6 +2,8 @@ export type LocTier = 'voice' | 'subtitles' | 'none';
 
 export const TIERS: readonly LocTier[] = ['voice', 'subtitles', 'none'] as const;
 
+export type EarlyAccessMode = 'all' | 'ea_only' | 'ea_was' | 'ea_hide';
+
 export interface TierMeta {
   label: string;
   shortLabel: string;
@@ -31,6 +33,8 @@ export interface GameMeta {
   interface: boolean;
   subtitles: boolean;
   voice: boolean;
+  isEarlyAccess: boolean;
+  hasOriginalReleaseDate: boolean;
   releaseYear: string;
   reviewCount: number;
   reviewPercent: number;

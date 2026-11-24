@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { GameMeta, TIERS, TIER_INFO } from '../config/tiers';
+import { EarlyAccessMode, GameMeta, TIERS, TIER_INFO } from '../config/tiers';
 import {
   FilterPreset,
   addHiddenTag,
@@ -17,6 +17,7 @@ import {
   resetScopeFilters,
   savePresetFromScope,
   setActiveTag,
+  setEarlyAccessFilter,
   setRangeFilters,
   subscribeFilters,
   toggleLanguageFilter,
@@ -38,6 +39,12 @@ function getTargetDocument(): Document {
   return window.g_PopupManager?.GetExistingPopup?.('SP Desktop_uid0')?.m_popup?.document || document;
 }
 
+const EA_OPTIONS: Array<{ id: EarlyAccessMode; label: string }> = [
+  { id: 'ea_only', label: 'Только ранний доступ' },
+  { id: 'ea_was', label: 'Бывший EA / Переиздание' },
+  { id: 'ea_hide', label: 'Скрыть ранний доступ' },
+];
+
 export function SmartFilterModal({ scope, scopeTitle, games, onClose }: SmartFilterModalProps) {
   const [, rerender] = React.useReducer((n: number) => n + 1, 0);
   const [activeTab, setActiveTab] = useState<'filters' | 'modules'>('filters');
@@ -49,15 +56,14 @@ export function SmartFilterModal({ scope, scopeTitle, games, onClose }: SmartFil
   const [fetchStatus, setFetchStatus] = useState<FetchProgress>(getFetchProgress);
   const [bulkNotice, setBulkNotice] = useState<string | null>(null);
 
-  // Позиция плавающего окна (по умолчанию справа-по центру, чтобы не перекрывать левое дерево коллекций)
   const [pos, setPos] = useState<{ x: number; y: number }>(() => {
     const doc = getTargetDocument();
     const winW = doc.defaultView?.innerWidth || 1280;
     const winH = doc.defaultView?.innerHeight || 800;
-    const width = Math.min(860, winW - 40);
+    const width = Math.min(880, winW - 40);
     return {
       x: Math.max(20, Math.round((winW - width) / 2 + 80)),
-      y: Math.max(24, Math.round(winH * 0.08)),
+      y: Math.max(20, Math.round(winH * 0.06)),
     };
   });
 
@@ -95,7 +101,7 @@ export function SmartFilterModal({ scope, scopeTitle, games, onClose }: SmartFil
       if (!dragRef.current) return;
       const dx = e.clientX - dragRef.current.startX;
       const dy = e.clientY - dragRef.current.startY;
-      const elWidth = modalRef.current?.offsetWidth || 860;
+      const elWidth = modalRef.current?.offsetWidth || 880;
       const maxX = Math.max(10, targetWin.innerWidth - Math.min(elWidth, 240));
       const maxY = Math.max(10, targetWin.innerHeight - 60);
       const nextX = Math.min(maxX, Math.max(-elWidth + 240, dragRef.current.origX + dx));
@@ -161,6 +167,7 @@ export function SmartFilterModal({ scope, scopeTitle, games, onClose }: SmartFil
 
   const stats = useMemo(() => {
     const langCounts: Record<string, number> = { voice: 0, subtitles: 0, none: 0 };
+    const eaCounts: Record<string, number> = { ea_only: 0, ea_was: 0, ea_hide: 0 };
     const yearCounts = new Map();
     let minRev = Infinity;
     let maxRev = 0;
@@ -171,6 +178,11 @@ export function SmartFilterModal({ scope, scopeTitle, games, onClose }: SmartFil
     for (const g of games) {
       if (matchesGameMeta(scope, g, 'language')) {
         langCounts[g.tier]++;
+      }
+      if (matchesGameMeta(scope, g, 'earlyAccess')) {
+        if (g.isEarlyAccess) eaCounts.ea_only++;
+        if (!g.isEarlyAccess && g.hasOriginalReleaseDate) eaCounts.ea_was++;
+        if (!g.isEarlyAccess) eaCounts.ea_hide++;
       }
       if (matchesGameMeta(scope, g, 'years')) {
         yearCounts.set(g.releaseYear, (yearCounts.get(g.releaseYear) ?? 0) + 1);
@@ -194,6 +206,7 @@ export function SmartFilterModal({ scope, scopeTitle, games, onClose }: SmartFil
 
     return {
       langCounts,
+      eaCounts,
       sortedYears,
       totalMatched,
       minRev: minRev === Infinity ? 0 : minRev,
@@ -205,6 +218,7 @@ export function SmartFilterModal({ scope, scopeTitle, games, onClose }: SmartFil
     scope,
     games,
     state.languages.size,
+    state.earlyAccess,
     state.years.size,
     state.reviewCountMin,
     state.reviewCountMax,
@@ -245,7 +259,7 @@ export function SmartFilterModal({ scope, scopeTitle, games, onClose }: SmartFil
         position: 'fixed',
         left: `${pos.x}px`,
         top: `${pos.y}px`,
-        width: '860px',
+        width: '880px',
         maxWidth: 'calc(100vw - 24px)',
         maxHeight: 'calc(100vh - 32px)',
         backgroundColor: '#171d25',
@@ -559,7 +573,7 @@ export function SmartFilterModal({ scope, scopeTitle, games, onClose }: SmartFil
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ background: '#11161d', padding: '12px', borderRadius: '4px', border: '1px solid #242e3b' }}>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: '#66c0f4', marginBottom: '8px', textTransform: 'uppercase' }}>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: '#66c0f4', marginBottom: '6px', textTransform: 'uppercase' }}>
                   Русский язык
                 </div>
                 {TIERS.map((tier) => {
@@ -572,7 +586,7 @@ export function SmartFilterModal({ scope, scopeTitle, games, onClose }: SmartFil
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        padding: '4px 4px',
+                        padding: '3px 4px',
                         cursor: 'pointer',
                         fontSize: '13px',
                       }}
@@ -594,12 +608,45 @@ export function SmartFilterModal({ scope, scopeTitle, games, onClose }: SmartFil
               </div>
 
               <div style={{ background: '#11161d', padding: '12px', borderRadius: '4px', border: '1px solid #242e3b' }}>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: '#66c0f4', marginBottom: '8px', textTransform: 'uppercase' }}>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: '#66c0f4', marginBottom: '6px', textTransform: 'uppercase' }}>
+                  Ранний доступ
+                </div>
+                {EA_OPTIONS.map((opt) => {
+                  const checked = state.earlyAccess === opt.id;
+                  return (
+                    <label
+                      key={opt.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '3px 4px',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                      }}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => setEarlyAccessFilter(scope, opt.id)}
+                          style={{ accentColor: '#66c0f4', width: '15px', height: '15px' }}
+                        />
+                        <span>{opt.label}</span>
+                      </span>
+                      <span style={{ color: '#8f98a0', fontSize: '12px' }}>{stats.eaCounts[opt.id]}</span>
+                    </label>
+                  );
+                })}
+              </div>
+
+              <div style={{ background: '#11161d', padding: '12px', borderRadius: '4px', border: '1px solid #242e3b' }}>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: '#66c0f4', marginBottom: '6px', textTransform: 'uppercase' }}>
                   Отзывы и рейтинг
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                   <div>
-                    <div style={{ fontSize: '11px', color: '#8f98a0', marginBottom: '4px' }}>Отзывов от</div>
+                    <div style={{ fontSize: '11px', color: '#8f98a0', marginBottom: '3px' }}>Отзывов от</div>
                     <input
                       type="number"
                       placeholder={`От ${stats.minRev}`}
@@ -624,7 +671,7 @@ export function SmartFilterModal({ scope, scopeTitle, games, onClose }: SmartFil
                     />
                   </div>
                   <div>
-                    <div style={{ fontSize: '11px', color: '#8f98a0', marginBottom: '4px' }}>Отзывов до</div>
+                    <div style={{ fontSize: '11px', color: '#8f98a0', marginBottom: '3px' }}>Отзывов до</div>
                     <input
                       type="number"
                       placeholder={`До ${stats.maxRev}`}
@@ -649,7 +696,7 @@ export function SmartFilterModal({ scope, scopeTitle, games, onClose }: SmartFil
                     />
                   </div>
                   <div>
-                    <div style={{ fontSize: '11px', color: '#8f98a0', marginBottom: '4px' }}>Рейтинг от (%)</div>
+                    <div style={{ fontSize: '11px', color: '#8f98a0', marginBottom: '3px' }}>Рейтинг от (%)</div>
                     <input
                       type="number"
                       min={0}
@@ -676,7 +723,7 @@ export function SmartFilterModal({ scope, scopeTitle, games, onClose }: SmartFil
                     />
                   </div>
                   <div>
-                    <div style={{ fontSize: '11px', color: '#8f98a0', marginBottom: '4px' }}>Рейтинг до (%)</div>
+                    <div style={{ fontSize: '11px', color: '#8f98a0', marginBottom: '3px' }}>Рейтинг до (%)</div>
                     <input
                       type="number"
                       min={0}
@@ -706,7 +753,7 @@ export function SmartFilterModal({ scope, scopeTitle, games, onClose }: SmartFil
               </div>
 
               <div style={{ background: '#11161d', padding: '12px', borderRadius: '4px', border: '1px solid #242e3b', flex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                   <span style={{ fontSize: '12px', fontWeight: 700, color: '#66c0f4', textTransform: 'uppercase' }}>Год выхода</span>
                   {state.years.size > 0 && (
                     <span onClick={() => clearYearFilter(scope)} style={{ fontSize: '11px', color: '#66c0f4', cursor: 'pointer' }}>
@@ -728,10 +775,10 @@ export function SmartFilterModal({ scope, scopeTitle, games, onClose }: SmartFil
                     padding: '5px 8px',
                     borderRadius: '3px',
                     fontSize: '12px',
-                    marginBottom: '8px',
+                    marginBottom: '6px',
                   }}
                 />
-                <div style={{ maxHeight: '120px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                <div style={{ maxHeight: '110px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '3px' }}>
                   {filteredYears.map(([year, count]: any) => (
                     <label
                       key={year}

@@ -1,7 +1,8 @@
-import { GameMeta, LocTier, TIERS } from '../config/tiers';
+import { EarlyAccessMode, GameMeta, LocTier, TIERS } from '../config/tiers';
 
 export interface SmartFilterState {
   languages: Set<LocTier>;
+  earlyAccess: EarlyAccessMode;
   years: Set<string>;
   reviewCountMin: number | null;
   reviewCountMax: number | null;
@@ -14,6 +15,7 @@ export interface SmartFilterState {
 export interface FilterPreset {
   name: string;
   languages: LocTier[];
+  earlyAccess?: EarlyAccessMode;
   years: string[];
   reviewCountMin: number | null;
   reviewCountMax: number | null;
@@ -32,6 +34,7 @@ const listeners = new Set<(scope: string) => void>();
 function createDefaultState(): SmartFilterState {
   return {
     languages: new Set<LocTier>(TIERS),
+    earlyAccess: 'all',
     years: new Set<string>(),
     reviewCountMin: null,
     reviewCountMax: null,
@@ -45,6 +48,7 @@ function createDefaultState(): SmartFilterState {
 function cloneState(src: SmartFilterState): SmartFilterState {
   return {
     languages: new Set<LocTier>(src.languages),
+    earlyAccess: src.earlyAccess,
     years: new Set<string>(src.years),
     reviewCountMin: src.reviewCountMin,
     reviewCountMax: src.reviewCountMax,
@@ -58,6 +62,7 @@ function cloneState(src: SmartFilterState): SmartFilterState {
 function isStateActive(state: SmartFilterState | null | undefined): boolean {
   if (!state) return false;
   if (state.languages.size !== TIERS.length) return true;
+  if (state.earlyAccess !== 'all') return true;
   if (state.years.size > 0) return true;
   if (state.reviewCountMin !== null || state.reviewCountMax !== null) return true;
   if (state.ratingMin !== null || state.ratingMax !== null) return true;
@@ -129,6 +134,14 @@ export function toggleLanguageFilter(scope: string, tier: LocTier): void {
   const state = getFilterState(scope);
   if (state.languages.has(tier)) state.languages.delete(tier);
   else state.languages.add(tier);
+  emit(scope);
+}
+
+export function setEarlyAccessFilter(scope: string, mode: EarlyAccessMode): void {
+  const state = getFilterState(scope);
+  const next = state.earlyAccess === mode ? 'all' : mode;
+  if (state.earlyAccess === next) return;
+  state.earlyAccess = next;
   emit(scope);
 }
 
@@ -254,6 +267,7 @@ export function savePresetFromScope(scope: string, name: string): FilterPreset[]
   const preset: FilterPreset = {
     name: cleanName,
     languages: Array.from(st.languages),
+    earlyAccess: st.earlyAccess,
     years: Array.from(st.years),
     reviewCountMin: st.reviewCountMin,
     reviewCountMax: st.reviewCountMax,
@@ -281,6 +295,7 @@ export function deleteSavedPreset(name: string): FilterPreset[] {
 export function applyPresetToScope(scope: string, preset: FilterPreset): void {
   const next: SmartFilterState = {
     languages: new Set<LocTier>(preset.languages ?? TIERS),
+    earlyAccess: preset.earlyAccess ?? 'all',
     years: new Set<string>(preset.years ?? []),
     reviewCountMin: preset.reviewCountMin ?? null,
     reviewCountMax: preset.reviewCountMax ?? null,
@@ -293,7 +308,7 @@ export function applyPresetToScope(scope: string, preset: FilterPreset): void {
   emit(scope);
 }
 
-export type FilterCategory = 'language' | 'years' | 'reviewCount' | 'rating' | 'tags';
+export type FilterCategory = 'language' | 'earlyAccess' | 'years' | 'reviewCount' | 'rating' | 'tags';
 
 export function matchesGameMeta(scope: string, meta: GameMeta, exclude?: FilterCategory): boolean {
   const state = getFilterState(scope);
@@ -301,6 +316,12 @@ export function matchesGameMeta(scope: string, meta: GameMeta, exclude?: FilterC
   if (exclude !== 'language') {
     if (state.languages.size === 0) return false;
     if (!state.languages.has(meta.tier)) return false;
+  }
+
+  if (exclude !== 'earlyAccess' && state.earlyAccess !== 'all') {
+    if (state.earlyAccess === 'ea_only' && !meta.isEarlyAccess) return false;
+    if (state.earlyAccess === 'ea_was' && (meta.isEarlyAccess || !meta.hasOriginalReleaseDate)) return false;
+    if (state.earlyAccess === 'ea_hide' && meta.isEarlyAccess) return false;
   }
 
   if (exclude !== 'years' && state.years.size > 0) {

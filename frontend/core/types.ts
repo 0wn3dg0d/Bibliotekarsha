@@ -12,3 +12,11 @@ export interface GamePageWidget {
   order: number;
   render: (appId: number) => any;
 }
+
+export interface NfoSection {
+  id: string;
+  title: string;
+  subtitle?: string;
+  order: number;
+  render: (appId: number) => any;
+}

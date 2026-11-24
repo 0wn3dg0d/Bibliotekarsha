@@ -1,7 +1,7 @@
 import { GameMeta, LocTier } from '../config/tiers';
 import { getAllUserCollectionsSafe, isRatable, isSteamApp, libraryApps } from '../lib/steam';
 
-const DB_NAME = 'BibliotekarshaDB_v5';
+const DB_NAME = 'BibliotekarshaDB_v6';
 const STORE_NAME = 'games';
 const CACHE_TTL = 14 * 24 * 60 * 60 * 1000;
 
@@ -48,6 +48,8 @@ function packGame(g: GameMeta): PackedGame {
   if (g.interface) mask |= 1;
   if (g.subtitles) mask |= 2;
   if (g.voice) mask |= 4;
+  if (g.isEarlyAccess) mask |= 8;
+  if (g.hasOriginalReleaseDate) mask |= 16;
   return [mask, g.releaseYear, g.reviewCount, g.reviewPercent, g.tagIds, g.updatedAt];
 }
 
@@ -56,6 +58,8 @@ function unpackGame(p: PackedGame): GameMeta {
   const voice = Boolean(mask & 4);
   const subtitles = Boolean(mask & 2);
   const iface = Boolean(mask & 1) || voice || subtitles;
+  const isEarlyAccess = Boolean(mask & 8);
+  const hasOriginalReleaseDate = Boolean(mask & 16);
   let tier: LocTier = 'none';
   if (voice) tier = 'voice';
   else if (iface || subtitles) tier = 'subtitles';
@@ -64,6 +68,8 @@ function unpackGame(p: PackedGame): GameMeta {
     interface: iface,
     subtitles,
     voice,
+    isEarlyAccess,
+    hasOriginalReleaseDate,
     releaseYear: releaseYear || 'Без даты',
     reviewCount: reviewCount || 0,
     reviewPercent: reviewPercent || 0,
@@ -214,8 +220,13 @@ interface StoreLanguageItem {
 
 interface StoreBrowseItem {
   appid: number;
+  is_early_access?: boolean;
   supported_languages?: StoreLanguageItem[];
-  release?: { original_release_date?: number; steam_release_date?: number };
+  release?: {
+    original_release_date?: number;
+    original_steam_release_date?: number;
+    steam_release_date?: number;
+  };
   reviews?: { summary_filtered?: { review_count?: number; percent_positive?: number } };
   tagids?: number[];
 }
@@ -271,13 +282,16 @@ function parseGameMeta(item: StoreBrowseItem | undefined): GameMeta {
   if (voice) tier = 'voice';
   else if (iface || subtitles) tier = 'subtitles';
 
-  const relTs = item?.release?.original_release_date || item?.release?.steam_release_date;
+  const origTs = item?.release?.original_release_date || item?.release?.original_steam_release_date;
+  const relTs = origTs || item?.release?.steam_release_date;
 
   return {
     tier,
     interface: iface,
     subtitles,
     voice,
+    isEarlyAccess: Boolean(item?.is_early_access),
+    hasOriginalReleaseDate: Boolean(origTs),
     releaseYear: parseReleaseYear(relTs),
     reviewCount: item?.reviews?.summary_filtered?.review_count ?? 0,
     reviewPercent: item?.reviews?.summary_filtered?.percent_positive ?? 0,
