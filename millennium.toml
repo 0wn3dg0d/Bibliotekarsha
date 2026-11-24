@@ -1,7 +1,7 @@
 [plugin]
 id = "com.0wn3df1x.bibliotekarsha"
 name = "Bibliotekarsha (Beta)"
-version = "0.5.0"
+version = "0.5.1"
 author = "0wn3df1x"
 description = "Бета-версия плагина для библиотеки Steam: умная фильтрация по русской озвучке, субтитрам, умным меткам (по весу и исключениям), годам, отзывам, рейтингу и шаблонам."
 

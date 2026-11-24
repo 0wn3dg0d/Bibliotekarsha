@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bibliotekarsha (Beta) — Умная фильтрация библиотеки Steam</title>
+    <title>Bibliotekarsha (Beta) — Умная фильтрация коллекций Steam</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -93,14 +93,6 @@
             line-height: 1.7;
             font-size: 1.05rem;
         }
-        .remark-box {
-            background-color: rgba(191, 166, 90, 0.08);
-            border: 1px solid rgba(191, 166, 90, 0.45);
-            border-radius: 0.375rem;
-            padding: 1rem 1.25rem;
-            margin-top: 1rem;
-            line-height: 1.6;
-        }
         .feature-img {
             border: 1px solid #3A3A3A;
             border-radius: 0.5rem;
@@ -182,27 +174,27 @@
 
         <header class="text-center mb-8" style="padding: 1.5rem 0 0;">
             <h1 style="font-size: 2.6rem; font-weight: bold; color: #D7C589; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem;">
-                Bibliotekarsha <span class="beta-badge">v0.5.0 BETA</span>
+                Bibliotekarsha <span class="beta-badge">v0.5.1 BETA</span>
             </h1>
             <div class="intro-lead">
                 <p style="margin: 0 0 0.75rem 0;">
-                    Встроенной фильтрации в библиотеке Steam катастрофически не хватает гибкости и базовых вещей: невозможно быстро оставить только игры с русской озвучкой или субтитрами, отсеять проекты, где нужный жанр затерялся на 15-м месте в списке меток, или отфильтровать свою библиотеку по году выхода, рейтингу и количеству отзывов.
+                    Встроенной фильтрации в библиотеке Steam катастрофически не хватает гибкости и базовых вещей: невозможно быстро оставить только игры с русской озвучкой или субтитрами, отсеять проекты, где нужный жанр затерялся на 15-м месте в списке меток, или отфильтровать свои коллекции по году выхода, рейтингу и количеству отзывов.
                 </p>
                 <p style="margin: 0;">
-                    <strong>Bibliotekarsha</strong> — плагин для клиента Steam (на базе Millennium), который закрывает эти пробелы и позволяет комфортно наводить порядок как во всей библиотеке, так и внутри отдельных коллекций.
+                    <strong>Bibliotekarsha</strong> — модульный плагин для клиента Steam (на базе Millennium), который добавляет умную фильтрацию прямо внутри ваших коллекций, сохраняя привычное дерево папок слева.
                 </p>
             </div>
         </header>
 
         <div class="text-center mb-8">
             <a href="https://github.com/0wn3dg0d/Bibliotekarsha/releases" target="_blank" rel="noopener noreferrer" class="download-btn">
-                Скачать v0.5.0 Beta (.star) с GitHub Releases
+                Скачать v0.5.1 Beta (.star) с GitHub Releases
             </a>
         </div>
 
         <div class="text-center mb-8">
             <img src="https://i.imgur.com/YAVJRPW.png" alt="Окно фильтров Bibliotekarsha и фильтрация одной коллекции" class="feature-img" style="max-width: 1000px; width: 100%;">
-            <p class="img-caption">Окно настройки умных фильтров Bibliotekarsha и фильтрация отдельной коллекции</p>
+            <p class="img-caption">Плавающее окно настройки умных фильтров Bibliotekarsha и фильтрация отдельной коллекции</p>
         </div>
 
         <div class="section-divider">
@@ -213,26 +205,20 @@
 
         <main class="space-y-4">
             <details open>
-                <summary>Два режима работы: общая фильтрация и фильтрация по коллекциям</summary>
+                <summary>Фильтрация внутри коллекций, массовое применение и счётчики</summary>
                 <div class="details-content">
                     <ul>
-                        <li><strong>Фильтрация внутри конкретной коллекции:</strong> В верхней панели любой открытой коллекции (рядом со списком сортировки) появляется кнопка <strong>Bibliotekarsha</strong>. Заданные здесь фильтры применяются только к этой коллекции и не ломают структуру папок слева.</li>
-                        <li><strong>Массовое применение ко всем коллекциям и двойные счётчики:</strong> Внутри окна настроек есть кнопки <strong>«Применить ко всем коллекциям»</strong> и <strong>«Снять со всех коллекций»</strong>. При применении рядом с каждой коллекцией в левой панели появляется цветной бейдж <code>подходит / всего</code> (голубой, если подходящие игры есть, и красный, если <code>0</code>) — вы сразу видите, где остались нужные игры, не заходя в каждую папку.</li>
-                        <li><strong>Общая фильтрация по всему аккаунту:</strong> В стандартной панели фильтров Steam (кнопка воронки над списком игр слева) также добавлена кнопка <strong>Bibliotekarsha</strong> — она просеивает вообще все игры на аккаунте единым списком.</li>
-                        <li><strong>Шаблоны фильтров:</strong> Любую удачную комбинацию условий можно сохранить под своим именем и применять в один клик в других коллекциях.</li>
+                        <li><strong>Изолированная фильтрация по коллекциям:</strong> В верхней панели любой открытой коллекции (рядом со списком сортировки) появляется кнопка <strong>Bibliotekarsha</strong>. Настроенные фильтры применяются строго к выбранной коллекции, не ломая дерево папок в левом меню.</li>
+                        <li><strong>Массовое применение ко всем коллекциям и двойные счётчики:</strong> Внутри окна настроек доступны кнопки <strong>«Применить ко всем коллекциям»</strong> и <strong>«Снять со всех коллекций»</strong>. При применении рядом с каждой коллекцией в левой панели появляется цветной бейдж <code>подходит / всего</code> (голубой, если подходящие игры есть, и красный, если <code>0</code>) — вы сразу видите статистику по всем папкам, не заходя в каждую из них.</li>
+                        <li><strong>Свободное плавающее окно:</strong> Окно настроек можно перетаскивать за верхнюю панель в любую область экрана, чтобы в реальном времени видеть изменения в списке игр и в левом меню коллекций.</li>
+                        <li><strong>Шаблоны и управление модулями:</strong> Любую комбинацию условий можно сохранить как шаблон, а во вкладке <strong>«Модули»</strong> — включать и отключать отдельные компоненты плагина без перезапуска Steam.</li>
                     </ul>
-                    <div class="remark-box">
-                        <strong style="color: #D7C589;">Ремарка:</strong> Общий фильтр Steam по самой логике клиента сворачивает папки коллекций в единый плоский список игр. Поэтому, если вы хотите сохранить привычное дерево коллекций в левом меню и видеть статистику по каждой из них, настраивайте фильтр через кнопку <strong>Bibliotekarsha</strong> внутри любой коллекции и нажимайте <strong>«Применить ко всем коллекциям»</strong> (а когда закончите — <strong>«Снять со всех коллекций»</strong>).
-                    </div>
 
                     <details style="margin-top: 1.5rem;">
-                        <summary style="font-size: 1rem;">Показать скриншоты работы режимов (коллекции и вся библиотека)</summary>
+                        <summary style="font-size: 1rem;">Показать скриншот массового применения ко всем коллекциям</summary>
                         <div class="details-content text-center">
                             <img src="https://i.imgur.com/2nZAUax.png" alt="Фильтр применён ко всем коллекциям с двойными счётчиками" class="feature-img" style="max-width: 960px; width: 100%;">
                             <p class="img-caption">Применение фильтра ко всем коллекциям одновременно с двойными счётчиками в левом меню</p>
-
-                            <img src="https://i.imgur.com/CheaNgN.png" alt="Общая фильтрация по всей библиотеке Steam" class="feature-img" style="max-width: 960px; width: 100%;">
-                            <p class="img-caption">Общая фильтрация по всем играм аккаунта через панель фильтров Steam</p>
                         </div>
                     </details>
                 </div>
@@ -289,14 +275,14 @@
                         <li>Откройте папку плагинов Millennium в директории Steam (по умолчанию: <code>D:\Program Files (x86)\Steam\millennium\plugins</code> или <code>C:\Program Files (x86)\Steam\millennium\plugins</code>) и перенесите туда скачанный файл.</li>
                         <li>Запустите или перезапустите клиент Steam.</li>
                         <li>В левом верхнем углу окна нажмите <strong>Steam → Настройки</strong>, перейдите в раздел <strong>Millennium</strong>, откройте вкладку <strong>Плагины</strong>, активируйте <strong>Bibliotekarsha (Beta)</strong> и нажмите <strong>Сохранить изменения</strong> (при необходимости подтвердите перезагрузку интерфейса).</li>
-                        <li>Перейдите в <strong>Библиотеку</strong> — автоматически начнётся фоновый сбор информации об играх. При нажатии на кнопку <strong>Bibliotekarsha</strong> (в верхней панели любой коллекции или в панели фильтров слева) в шапке открывшегося окна вы увидите текущий прогресс сбора в процентах. Собранная база сохраняется на <strong>14 дней</strong>, после чего данные автоматически обновляются в фоне для поддержания актуальности.</li>
+                        <li>Перейдите в <strong>Библиотеку</strong> и откройте любую коллекцию — автоматически начнётся фоновый сбор информации об играх. При нажатии на кнопку <strong>Bibliotekarsha</strong> (рядом с меню сортировки в верхней панели коллекции) в шапке открывшегося окна отображается текущий прогресс сбора в процентах. Собранная база сохраняется на <strong>14 дней</strong>, после чего данные автоматически обновляются в фоне для поддержания актуальности.</li>
                     </ol>
                 </div>
             </details>
         </main>
 
         <div class="warning-box">
-            <h3>Примечание о бета-версии (v0.5.0)</h3>
+            <h3>Примечание о бета-версии (v0.5.1)</h3>
             <div class="details-content" style="border: none; background: none; padding-top: 0.5rem;">
                 <p>Текущая сборка находится в стадии бета-тестирования и предназначена для десктопного режима клиента Steam (адаптация под Big Picture Mode планируется в следующих обновлениях).</p>
             </div>

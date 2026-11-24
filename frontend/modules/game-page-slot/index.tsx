@@ -1,6 +1,8 @@
+import React, { useEffect, useState } from 'react';
+import { getRegisteredGamePageWidgets, subscribeGamePageWidgets } from '../../core/game-page-registry';
+import { BibliotekarshaModule } from '../../core/types';
 import { ReactRoot, classModuleFinder, getLibraryPath, libraryAppIdFromPath, mountReact } from '../../lib/steam';
 import { observeThrottled } from '../../utils/dom';
-import { RussianStat, StatClasses } from './components/russian-stat';
 
 const statClasses = classModuleFinder(
   'GameStat',
@@ -11,13 +13,35 @@ const statClasses = classModuleFinder(
   'PlayBarDetailLabel'
 );
 
+export function useGameStatClasses() {
+  return statClasses();
+}
+
+function GamePageSlotHost({ appId }: { appId: number }) {
+  const [widgets, setWidgets] = useState(getRegisteredGamePageWidgets);
+
+  useEffect(() => {
+    return subscribeGamePageWidgets(() => {
+      setWidgets(getRegisteredGamePageWidgets());
+    });
+  }, []);
+
+  return (
+    <>
+      {widgets.map((w) => (
+        <React.Fragment key={w.id}>{w.render(appId)}</React.Fragment>
+      ))}
+    </>
+  );
+}
+
 interface Mounted {
   host: HTMLElement;
   root: ReactRoot;
   appId: number;
 }
 
-export function initStatRow(doc: Document): () => void {
+function initGamePageSlot(doc: Document): () => void {
   const mounts = new Map<Element, Mounted>();
 
   const unmount = (section: Element) => {
@@ -34,7 +58,7 @@ export function initStatRow(doc: Document): () => void {
 
   const scan = () => {
     const appId = libraryAppIdFromPath(getLibraryPath());
-    const classes = statClasses() as StatClasses | null;
+    const classes = statClasses();
     if (!appId || !classes) {
       unmountAll();
       return;
@@ -50,7 +74,7 @@ export function initStatRow(doc: Document): () => void {
       section.appendChild(host);
       mounts.set(section, {
         host,
-        root: mountReact(host, <RussianStat appId={appId} classes={classes} />),
+        root: mountReact(host, <GamePageSlotHost appId={appId} />),
         appId,
       });
     }
@@ -62,3 +86,11 @@ export function initStatRow(doc: Document): () => void {
     unmountAll();
   };
 }
+
+export const gamePageSlotModule: BibliotekarshaModule = {
+  id: 'game-page-slot',
+  name: 'Панель виджетов на странице игры',
+  description: 'Базовый контейнер для отображения модулей (перевод, HLTB, ZOG, статистика друзей) на странице игры.',
+  defaultEnabled: true,
+  mountDocument: initGamePageSlot,
+};

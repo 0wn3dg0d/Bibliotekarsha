@@ -1,3 +1,4 @@
+import { BibliotekarshaModule } from '../../core/types';
 import { AppFilter, ReactRoot, classModuleFinder, findFiberProps, mountReact } from '../../lib/steam';
 import { subscribeFilters } from '../../stores/filters';
 import { onMetaUpdate } from '../../stores/localization';
@@ -31,7 +32,7 @@ interface Mounted {
 const filterAreas = (doc: Document, c: PanelClasses): HTMLElement[] =>
   Array.from(doc.querySelectorAll<HTMLElement>('.' + c.FilterArea)).filter((el) => !el.id);
 
-export function initLibraryFilter(doc: Document): () => void {
+function initLibraryFilter(doc: Document): () => void {
   const mounts = new Map<Element, Mounted>();
 
   const unmount = (area: Element) => {
@@ -89,3 +90,11 @@ export function initLibraryFilter(doc: Document): () => void {
     uninstallFilterPatch();
   };
 }
+
+export const libraryFilterModule: BibliotekarshaModule = {
+  id: 'library-filter',
+  name: 'Общая фильтрация библиотеки',
+  description: 'Добавляет кнопку Bibliotekarsha в стандартную панель фильтров Steam для просеивания всех игр аккаунта.',
+  defaultEnabled: true,
+  mountDocument: initLibraryFilter,
+};

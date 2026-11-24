@@ -1,4 +1,5 @@
 import { getReactInstance } from 'millennium';
+import { BibliotekarshaModule } from '../../core/types';
 import { getCollectionByIdSafe, isRatable } from '../../lib/steam';
 import { isScopeFilterActive, matchesGameMeta, subscribeFilters } from '../../stores/filters';
 import { cachedMeta, onMetaUpdate, requestManyMeta } from '../../stores/localization';
@@ -24,7 +25,7 @@ function getCollectionInfoFromFiber(el: Element): { id: string; totalCount?: num
   return null;
 }
 
-export function initSidebarCollections(doc: Document): () => void {
+function initSidebarCollections(doc: Document): () => void {
   const updateAllBadges = () => {
     const headers = doc.querySelectorAll<HTMLElement>('[class*="SectionHeaderContent"]');
 
@@ -118,3 +119,11 @@ export function initSidebarCollections(doc: Document): () => void {
     doc.querySelectorAll('.' + BADGE_CLASS).forEach((el) => el.remove());
   };
 }
+
+export const sidebarCollectionsModule: BibliotekarshaModule = {
+  id: 'sidebar-collections',
+  name: 'Двойные счётчики в списке коллекций',
+  description: 'Показывает бейдж подходит/всего рядом с каждой коллекцией в левом меню при активном фильтре.',
+  defaultEnabled: true,
+  mountDocument: initSidebarCollections,
+};

@@ -12,27 +12,29 @@ import { throttle } from '../../utils/throttle';
 
 export const GLOBAL_SCOPE = 'global';
 
-let lastGlobalActive = false;
-
 const dynamicCollections = (): Collection[] =>
   getAllUserCollectionsSafe().filter((c) => c.bIsDynamic);
 
 export const rematchLibrary = throttle(() => {
-  const isNowActive = isScopeFilterActive(GLOBAL_SCOPE);
-  if (!isNowActive && !lastGlobalActive) return;
-  lastGlobalActive = isNowActive;
+  const ui = getUIStore() as any;
+  const filter = ui?.currentAppFilter as any;
 
-  const filter = getUIStore()?.currentAppFilter;
+  // Принудительно запускаем пересчёт MobX в реальном времени
   const groups = filter?.m_filterSpec?.filterGroups;
-  if (groups && groups.length > 0 && groups[0]?.rgOptions) {
+  if (groups && groups.length > 0 && Array.isArray(groups[0]?.rgOptions)) {
     groups[0].rgOptions.splice(0, groups[0].rgOptions.length, ...groups[0].rgOptions);
+  } else if (filter?.m_filterSpec && typeof filter.m_filterSpec.strSearchText === 'string') {
+    const orig = filter.m_filterSpec.strSearchText;
+    filter.m_filterSpec.strSearchText = orig + ' ';
+    filter.m_filterSpec.strSearchText = orig;
   }
+
   for (const collection of dynamicCollections()) {
     try {
       collection.UpdateAllApps();
     } catch {}
   }
-}, 250);
+}, 150);
 
 function passesGlobalFilter(app: AppOverview): boolean {
   if (!isScopeFilterActive(GLOBAL_SCOPE)) return true;
@@ -47,7 +49,7 @@ function passesGlobalFilter(app: AppOverview): boolean {
 
 type MatchMethod = 'MatchesImpl' | 'MatchesScoredImpl';
 type MatchFn = (this: AppFilter, app: AppOverview) => boolean | number;
-type Patchable = Record<MatchMethod, MatchFn>;
+type Patchable = Record<MatchMethod, MatchFn> & { BIsEmpty?: () => boolean };
 
 let restorePatch: (() => void) | null = null;
 
@@ -72,7 +74,12 @@ export function installFilterPatch(): boolean {
   const target = baseClassDefining(filter, 'MatchesImpl');
   if (!target) return false;
 
-  const originals = { MatchesImpl: target.MatchesImpl, MatchesScoredImpl: target.MatchesScoredImpl };
+  const originals = {
+    MatchesImpl: target.MatchesImpl,
+    MatchesScoredImpl: target.MatchesScoredImpl,
+    BIsEmpty: target.BIsEmpty,
+  };
+
   const wrap = (name: MatchMethod, miss: boolean | number) => {
     const original = originals[name];
     target[name] = function (app) {
@@ -83,9 +90,17 @@ export function installFilterPatch(): boolean {
   wrap('MatchesImpl', false);
   wrap('MatchesScoredImpl', 0);
 
+  if (typeof originals.BIsEmpty === 'function') {
+    target.BIsEmpty = function () {
+      if (isScopeFilterActive(GLOBAL_SCOPE)) return false;
+      return originals.BIsEmpty!.call(this);
+    };
+  }
+
   restorePatch = () => {
     target.MatchesImpl = originals.MatchesImpl;
     target.MatchesScoredImpl = originals.MatchesScoredImpl;
+    if (originals.BIsEmpty) target.BIsEmpty = originals.BIsEmpty;
     restorePatch = null;
   };
   return true;

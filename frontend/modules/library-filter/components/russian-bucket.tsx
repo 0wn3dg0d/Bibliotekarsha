@@ -17,14 +17,13 @@ export interface BucketProps {
   classes: PanelClasses;
 }
 
-export function RussianBucket({ fnOnChange, classes }: BucketProps) {
+export function RussianBucket({ classes }: BucketProps) {
   const [, rerender] = React.useReducer((n: number) => n + 1, 0);
   const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     const unsubF = subscribeFilters((changedScope) => {
       if (changedScope === GLOBAL_SCOPE) {
-        fnOnChange?.();
         rerender();
       }
     });
@@ -35,7 +34,7 @@ export function RussianBucket({ fnOnChange, classes }: BucketProps) {
       unsubF();
       unsubM();
     };
-  }, [fnOnChange, modalOpen]);
+  }, [modalOpen]);
 
   const allApps = libraryApps();
   const active = isScopeFilterActive(GLOBAL_SCOPE);

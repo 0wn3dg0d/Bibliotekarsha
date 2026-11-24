@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { afterPatch, findModule, findModuleExport, replacePatch, type Patch } from 'millennium';
 import { formatLocDetail } from '../../config/tiers';
+import { BibliotekarshaModule } from '../../core/types';
 import { getLibraryPath } from '../../lib/steam';
 import {
   isScopeFilterActive,
@@ -250,7 +251,7 @@ function filterCollectionSections(zeFiber: any, scope: string): number[] {
   return allAppIds;
 }
 
-export function initCollectionFilter(): () => void {
+function initCollectionFilter(): () => void {
   if (activePatches.length > 0) return () => {};
 
   let throttleTimer: any = null;
@@ -359,3 +360,11 @@ export function initCollectionFilter(): () => void {
     patchedInstances.clear();
   };
 }
+
+export const collectionFilterModule: BibliotekarshaModule = {
+  id: 'collection-filter',
+  name: 'Фильтрация внутри коллекций',
+  description: 'Добавляет кнопку Bibliotekarsha в шапку каждой коллекции рядом со списком сортировки.',
+  defaultEnabled: true,
+  mountGlobal: initCollectionFilter,
+};

@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
-import { TIER_INFO, formatLocDetail } from '../../../config/tiers';
-import { cachedMeta, onMetaUpdate, requestMeta } from '../../../stores/localization';
+import { TIER_INFO, formatLocDetail } from '../../config/tiers';
+import { registerGamePageWidget } from '../../core/game-page-registry';
+import { BibliotekarshaModule } from '../../core/types';
+import { cachedMeta, onMetaUpdate, requestMeta } from '../../stores/localization';
+import { useGameStatClasses } from '../game-page-slot';
 
-export type StatClasses = Record<string, string>;
-
-export function RussianStat({ appId, classes }: { appId: number; classes: StatClasses }) {
+function RussianLocWidget({ appId }: { appId: number }) {
   const [meta, setMeta] = useState(() => cachedMeta(appId));
+  const classes = useGameStatClasses();
 
   useEffect(() => {
     setMeta(cachedMeta(appId));
@@ -15,6 +17,7 @@ export function RussianStat({ appId, classes }: { appId: number; classes: StatCl
     });
   }, [appId]);
 
+  if (!classes) return null;
   const color = meta ? TIER_INFO[meta.tier].color : '#8b949e';
 
   return (
@@ -39,3 +42,16 @@ export function RussianStat({ appId, classes }: { appId: number; classes: StatCl
     </div>
   );
 }
+
+export const gameLocBadgeModule: BibliotekarshaModule = {
+  id: 'game-loc-badge',
+  name: 'Индикатор русского языка на странице игры',
+  description: 'Отображает статус русской озвучки, субтитров и интерфейса рядом с кнопкой Играть.',
+  defaultEnabled: true,
+  mountGlobal: () =>
+    registerGamePageWidget({
+      id: 'russian-loc',
+      order: 10,
+      render: (appId: number) => <RussianLocWidget appId={appId} />,
+    }),
+};
