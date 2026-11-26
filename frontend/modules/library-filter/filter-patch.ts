@@ -15,24 +15,76 @@ export const GLOBAL_SCOPE = 'global';
 const dynamicCollections = (): Collection[] =>
   getAllUserCollectionsSafe().filter((c) => c.bIsDynamic);
 
-export const rematchLibrary = throttle(() => {
-  const ui = getUIStore() as any;
-  const filter = ui?.currentAppFilter as any;
+const dynFilterCache = new WeakMap<object, { ts: number; isDyn: boolean }>();
 
-  // Принудительно запускаем пересчёт MobX в реальном времени
+function isDynamicCollectionFilter(inst: unknown): boolean {
+  if (!inst || typeof inst !== 'object') return false;
+
+  const ui = getUIStore();
+  if (ui && (inst === ui.currentAppFilter || inst === ui.collectionsAppFilter)) {
+    return false;
+  }
+
+  const now = Date.now();
+  const cached = dynFilterCache.get(inst);
+  if (cached && now - cached.ts < 500) {
+    return cached.isDyn;
+  }
+
+  const anyInst = inst as any;
+  let isDyn = false;
+  for (const col of dynamicCollections() as any[]) {
+    if (
+      col?.m_filter === inst ||
+      col?.filter === inst ||
+      col?.m_dynamicFilter === inst
+    ) {
+      isDyn = true;
+      break;
+    }
+    if (
+      anyInst.m_filterSpec &&
+      (col?.m_filterSpec === anyInst.m_filterSpec ||
+        col?.filterSpec === anyInst.m_filterSpec ||
+        col?.m_filter?.m_filterSpec === anyInst.m_filterSpec)
+    ) {
+      isDyn = true;
+      break;
+    }
+  }
+
+  dynFilterCache.set(inst, { ts: now, isDyn });
+  return isDyn;
+}
+
+function nudgeFilter(filter: any): void {
+  if (!filter) return;
   const groups = filter?.m_filterSpec?.filterGroups;
-  if (groups && groups.length > 0 && Array.isArray(groups[0]?.rgOptions)) {
-    groups[0].rgOptions.splice(0, groups[0].rgOptions.length, ...groups[0].rgOptions);
-  } else if (filter?.m_filterSpec && typeof filter.m_filterSpec.strSearchText === 'string') {
+  if (Array.isArray(groups) && groups.length > 0) {
+    const nonEmpty = groups.find((g: any) => Array.isArray(g?.rgOptions) && g.rgOptions.length > 0);
+    if (nonEmpty) {
+      nonEmpty.rgOptions.splice(0, nonEmpty.rgOptions.length, ...nonEmpty.rgOptions);
+      return;
+    }
+    if (Array.isArray(groups[0]?.rgOptions)) {
+      groups[0].rgOptions.push(-999999);
+      groups[0].rgOptions.pop();
+      return;
+    }
+  }
+  if (filter?.m_filterSpec && typeof filter.m_filterSpec.strSearchText === 'string') {
     const orig = filter.m_filterSpec.strSearchText;
     filter.m_filterSpec.strSearchText = orig + ' ';
     filter.m_filterSpec.strSearchText = orig;
   }
+}
 
-  for (const collection of dynamicCollections()) {
-    try {
-      collection.UpdateAllApps();
-    } catch {}
+export const rematchLibrary = throttle(() => {
+  const ui = getUIStore() as any;
+  if (!ui) return;
+  nudgeFilter(ui.currentAppFilter);
+  if (ui.collectionsAppFilter && ui.collectionsAppFilter !== ui.currentAppFilter) {
+    nudgeFilter(ui.collectionsAppFilter);
   }
 }, 150);
 
@@ -84,7 +136,10 @@ export function installFilterPatch(): boolean {
     const original = originals[name];
     target[name] = function (app) {
       const result = original.call(this, app);
-      return result && !passesGlobalFilter(app) ? miss : result;
+      if (!result || !isScopeFilterActive(GLOBAL_SCOPE) || isDynamicCollectionFilter(this)) {
+        return result;
+      }
+      return passesGlobalFilter(app) ? result : miss;
     };
   };
   wrap('MatchesImpl', false);
@@ -92,7 +147,9 @@ export function installFilterPatch(): boolean {
 
   if (typeof originals.BIsEmpty === 'function') {
     target.BIsEmpty = function () {
-      if (isScopeFilterActive(GLOBAL_SCOPE)) return false;
+      if (isScopeFilterActive(GLOBAL_SCOPE) && !isDynamicCollectionFilter(this)) {
+        return false;
+      }
       return originals.BIsEmpty!.call(this);
     };
   }

@@ -24,9 +24,7 @@ import {
   toggleYearFilter,
 } from '../stores/filters';
 import { FetchProgress, getFetchProgress, onFetchProgress } from '../stores/localization';
-import { isModuleEnabled, setModuleEnabled, subscribeSettings } from '../stores/settings';
 import { ensureTagsLoaded, getAllTags, getTagName } from '../stores/tags';
-import { ALL_MODULES } from '../modules/registry';
 
 interface SmartFilterModalProps {
   scope: string;
@@ -34,6 +32,65 @@ interface SmartFilterModalProps {
   games: GameMeta[];
   onClose: () => void;
 }
+
+
+const SMART_FILTER_STYLES = `
+  .bib-sf-modal *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .bib-sf-modal *::-webkit-scrollbar-track {
+    background: #0e131a;
+    border-radius: 3px;
+  }
+  .bib-sf-modal *::-webkit-scrollbar-thumb {
+    background: #2f3b4c;
+    border-radius: 3px;
+  }
+  .bib-sf-modal *::-webkit-scrollbar-thumb:hover {
+    background: #4e637d;
+  }
+  .bib-sf-modal button {
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, filter 0.15s ease, transform 0.1s ease;
+  }
+  .bib-sf-modal button:hover:not(:disabled) {
+    filter: brightness(1.18);
+  }
+  .bib-sf-modal button:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+  .bib-sf-modal label {
+    border-radius: 3px;
+    transition: background-color 0.14s ease, color 0.14s ease;
+  }
+  .bib-sf-modal label:hover {
+    background-color: rgba(102, 192, 244, 0.1) !important;
+    color: #ffffff;
+  }
+  .bib-sf-modal input[type="text"],
+  .bib-sf-modal input[type="number"] {
+    outline: none;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+  .bib-sf-modal input[type="text"]:hover,
+  .bib-sf-modal input[type="number"]:hover {
+    border-color: #4b617a !important;
+    background-color: #202a38 !important;
+  }
+  .bib-sf-modal input[type="text"]:focus,
+  .bib-sf-modal input[type="number"]:focus {
+    border-color: #66c0f4 !important;
+    background-color: #222e3d !important;
+  }
+  .bib-sf-modal span[title="Применить шаблон"]:hover {
+    background-color: rgba(102, 192, 244, 0.22);
+    color: #ffffff !important;
+  }
+  .bib-sf-modal span[title="Удалить шаблон"]:hover {
+    background-color: rgba(196, 82, 82, 0.65) !important;
+    color: #ffffff !important;
+  }
+`;
 
 function getTargetDocument(): Document {
   return window.g_PopupManager?.GetExistingPopup?.('SP Desktop_uid0')?.m_popup?.document || document;
@@ -47,7 +104,6 @@ const EA_OPTIONS: Array<{ id: EarlyAccessMode; label: string }> = [
 
 export function SmartFilterModal({ scope, scopeTitle, games, onClose }: SmartFilterModalProps) {
   const [, rerender] = React.useReducer((n: number) => n + 1, 0);
-  const [activeTab, setActiveTab] = useState<'filters' | 'modules'>('filters');
   const [tagQuery, setTagQuery] = useState('');
   const [yearQuery, setYearQuery] = useState('');
   const [presetName, setPresetName] = useState('');
@@ -92,7 +148,6 @@ export function SmartFilterModal({ scope, scopeTitle, games, onClose }: SmartFil
       if (changedScope === scope || changedScope === 'collection:*') rerender();
     });
     const unsubP = onFetchProgress(setFetchStatus);
-    const unsubS = subscribeSettings(rerender);
 
     const targetDoc = getTargetDocument();
     const targetWin = targetDoc.defaultView || window;
@@ -131,7 +186,6 @@ export function SmartFilterModal({ scope, scopeTitle, games, onClose }: SmartFil
       targetWin.removeEventListener('keydown', handleKeyDown);
       unsubF();
       unsubP();
-      unsubS();
     };
   }, [scope]);
 
@@ -254,6 +308,7 @@ export function SmartFilterModal({ scope, scopeTitle, games, onClose }: SmartFil
   const modalNode = (
     <div
       ref={modalRef}
+      className="bib-sf-modal"
       onClick={(e) => e.stopPropagation()}
       style={{
         position: 'fixed',
@@ -274,6 +329,7 @@ export function SmartFilterModal({ scope, scopeTitle, games, onClose }: SmartFil
         fontFamily: '"Motiva Sans", Arial, sans-serif',
       }}
     >
+      <style>{SMART_FILTER_STYLES}</style>
       <div
         onMouseDown={(e) => {
           if ((e.target as HTMLElement).closest('button')) return;
@@ -325,40 +381,23 @@ export function SmartFilterModal({ scope, scopeTitle, games, onClose }: SmartFil
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <button
             type="button"
-            onClick={() => setActiveTab(activeTab === 'filters' ? 'modules' : 'filters')}
+            onClick={() => {
+              if (rangeTimerRef.current) clearTimeout(rangeTimerRef.current);
+              resetScopeFilters(scope);
+              syncInputsFromState();
+            }}
             style={{
-              background: activeTab === 'modules' ? 'rgba(102, 192, 244, 0.22)' : 'rgba(255,255,255,0.07)',
-              border: activeTab === 'modules' ? '1px solid #66c0f4' : '1px solid #384454',
-              color: activeTab === 'modules' ? '#fff' : '#c6d4df',
+              background: 'rgba(255,255,255,0.07)',
+              border: '1px solid #384454',
+              color: '#c6d4df',
               padding: '5px 12px',
               borderRadius: '3px',
               cursor: 'pointer',
               fontSize: '12px',
             }}
           >
-            {activeTab === 'filters' ? 'Модули' : 'К фильтрам'}
+            Сбросить текущий
           </button>
-          {activeTab === 'filters' && (
-            <button
-              type="button"
-              onClick={() => {
-                if (rangeTimerRef.current) clearTimeout(rangeTimerRef.current);
-                resetScopeFilters(scope);
-                syncInputsFromState();
-              }}
-              style={{
-                background: 'rgba(255,255,255,0.07)',
-                border: '1px solid #384454',
-                color: '#c6d4df',
-                padding: '5px 12px',
-                borderRadius: '3px',
-                cursor: 'pointer',
-                fontSize: '12px',
-              }}
-            >
-              Сбросить текущий
-            </button>
-          )}
           <button
             type="button"
             onClick={() => {
@@ -379,43 +418,7 @@ export function SmartFilterModal({ scope, scopeTitle, games, onClose }: SmartFil
         </div>
       </div>
 
-      {activeTab === 'modules' ? (
-        <div style={{ padding: '18px 20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', flex: 1 }}>
-          <div style={{ fontSize: '13px', color: '#8f98a0', marginBottom: '4px' }}>
-            Управление модулями плагина Bibliotekarsha. Изменения применяются мгновенно.
-          </div>
-          {ALL_MODULES.map((mod) => {
-            const enabled = isModuleEnabled(mod.id, mod.defaultEnabled);
-            return (
-              <label
-                key={mod.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  background: '#11161d',
-                  border: '1px solid #242e3b',
-                  borderRadius: '4px',
-                  padding: '12px 14px',
-                  cursor: 'pointer',
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#e5e9ec' }}>{mod.name}</div>
-                  <div style={{ fontSize: '12px', color: '#8f98a0', marginTop: '2px' }}>{mod.description}</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={enabled}
-                  onChange={(e) => setModuleEnabled(mod.id, e.target.checked)}
-                  style={{ accentColor: '#66c0f4', width: '17px', height: '17px', cursor: 'pointer' }}
-                />
-              </label>
-            );
-          })}
-        </div>
-      ) : (
-        <>
+      <>
           <div
             style={{
               padding: '10px 20px',
@@ -1069,8 +1072,7 @@ export function SmartFilterModal({ scope, scopeTitle, games, onClose }: SmartFil
               </div>
             </div>
           </div>
-        </>
-      )}
+      </>
 
       <div
         style={{

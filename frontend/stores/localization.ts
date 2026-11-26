@@ -1,7 +1,7 @@
 import { GameMeta, LocTier } from '../config/tiers';
 import { getAllUserCollectionsSafe, isRatable, isSteamApp, libraryApps } from '../lib/steam';
 
-const DB_NAME = 'BibliotekarshaDB_v6';
+const DB_NAME = 'BibliotekarshaDB_v7';
 const STORE_NAME = 'games';
 const CACHE_TTL = 14 * 24 * 60 * 60 * 1000;
 
@@ -219,7 +219,8 @@ interface StoreLanguageItem {
 }
 
 interface StoreBrowseItem {
-  appid: number;
+  appid?: number;
+  id?: number;
   is_early_access?: boolean;
   supported_languages?: StoreLanguageItem[];
   release?: {
@@ -240,7 +241,7 @@ async function fetchStoreBatch(ids: number[], countryCode: string) {
       include_supported_languages: true,
       include_release: true,
       include_reviews: true,
-      include_tag_count: true,
+      include_tag_count: 20,
     },
   };
   const url = `https://api.steampowered.com/IStoreBrowseService/GetItems/v1?input_json=${encodeURIComponent(
@@ -306,6 +307,15 @@ async function processQueue(): Promise<void> {
   emitProgress();
 
   try {
+    await initPromise;
+    const nowInit = Date.now();
+    for (const id of Array.from(pendingIds) as number[]) {
+      const existing = cache.get(id);
+      if (existing && nowInit - existing.updatedAt < CACHE_TTL) {
+        pendingIds.delete(id);
+      }
+    }
+    if (pendingIds.size === 0) return;
     while (pendingIds.size > 0) {
       const batch = Array.from(pendingIds).slice(0, currentBatchSize) as number[];
       batch.forEach((id) => {
@@ -342,13 +352,19 @@ async function processQueue(): Promise<void> {
       }
 
       const itemsById = new Map();
-      usRes.items.forEach((item) => itemsById.set(item.appid, item));
+      usRes.items.forEach((item) => {
+        const id = Number(item.appid || item.id);
+        if (id) itemsById.set(id, item);
+      });
 
       const missingIds = batch.filter((id) => !itemsById.has(id));
       if (missingIds.length > 0) {
         const ruRes = await fetchStoreBatch(missingIds, 'RU');
         if (ruRes.ok) {
-          ruRes.items.forEach((item) => itemsById.set(item.appid, item));
+          ruRes.items.forEach((item) => {
+            const id = Number(item.appid || item.id);
+            if (id) itemsById.set(id, item);
+          });
         }
       }
 

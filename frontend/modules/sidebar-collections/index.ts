@@ -56,7 +56,8 @@ function initSidebarCollections(doc: Document): () => void {
 
       let apps: any[] = [];
       try {
-        apps = (collection.visibleApps ?? collection.allApps ?? []).filter(isRatable);
+        const rawApps = collection.allApps?.length ? collection.allApps : (collection.visibleApps ?? []);
+        apps = rawApps.filter(isRatable);
       } catch {
         apps = [];
       }

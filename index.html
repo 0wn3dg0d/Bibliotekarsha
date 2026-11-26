@@ -3,121 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bibliotekarsha (Beta) — Умная фильтрация библиотеки Steam</title>
+    <title>Bibliotekarsha (Beta) — Расширение возможностей клиента Steam</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
         body {
             background-color: #0A0A0A;
             font-family: 'Exo 2', sans-serif;
             color: #C7C7C7;
             margin: 0;
-        }
-        details > summary {
-            list-style: none;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            padding: 1rem;
-            background-color: #121212;
-            border: 1px solid #3A3A3A;
-            border-radius: 0.375rem;
-            font-size: 1.125rem;
-            font-weight: 500;
-            color: #BFA65A;
-        }
-        details > summary::-webkit-details-marker { display: none; }
-        details > summary::before {
-            content: '+';
-            font-size: 1.5em;
-            margin-right: 1rem;
-            color: #BFA65A;
-            transition: transform 0.3s ease;
-            display: inline-block;
-            line-height: 1;
-            font-weight: bold;
-        }
-        details[open] > summary {
-            background-color: rgba(191, 166, 90, 0.05);
-            border-bottom-left-radius: 0;
-            border-bottom-right-radius: 0;
-        }
-        details[open] > summary::before { transform: rotate(45deg); }
-        .details-content {
-            padding: 1.5rem;
-            border: 1px solid #3A3A3A;
-            border-top: none;
-            background-color: #121212;
-            border-bottom-left-radius: 0.375rem;
-            border-bottom-right-radius: 0.375rem;
-        }
-        .details-content ul, .details-content ol { list-style: none; padding-left: 0; }
-        .details-content li {
-            position: relative;
-            padding-left: 1.75rem;
-            margin-bottom: 0.75rem;
             line-height: 1.6;
         }
-        .details-content ul > li::before {
-            content: '■';
-            position: absolute;
-            left: 0.5rem;
-            top: 0.25em;
-            color: #BFA65A;
-            font-size: 0.8em;
-        }
-        .details-content ol { counter-reset: list-counter; }
-        .details-content ol > li { counter-increment: list-counter; }
-        .details-content ol > li::before {
-            content: counter(list-counter) ".";
-            position: absolute;
-            left: 0.25rem;
-            top: 0;
-            color: #BFA65A;
-            font-weight: 500;
-            text-align: right;
-            width: 1rem;
-            margin-right: 0.5rem;
-        }
-        .details-content ul ul { margin-top: 0.75rem; padding-left: 1.25rem; }
+        .container { max-width: 74rem; margin: 0 auto; padding: 2rem 1.5rem 3rem; }
+        .text-center { text-align: center; }
+        .mb-8 { margin-bottom: 2rem; }
+        .space-y-4 > *:not(:last-child) { margin-bottom: 1rem; }
 
-        .intro-lead {
-            background-color: #121212;
-            border: 1px solid #3A3A3A;
-            border-left: 4px solid #BFA65A;
-            border-radius: 0.375rem;
-            padding: 1.5rem;
-            max-width: 56rem;
-            margin: 1.5rem auto 2rem;
-            text-align: left;
-            line-height: 1.7;
-            font-size: 1.05rem;
-        }
-        .feature-img {
-            border: 1px solid #3A3A3A;
-            border-radius: 0.5rem;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            max-width: 95%;
-            margin-top: 1rem;
-            margin-bottom: 1rem;
-        }
-        .feature-img:hover {
-            transform: scale(1.015);
-            box-shadow: 0 0 25px rgba(191, 166, 90, 0.3);
-        }
-        .img-caption {
-            font-size: 0.9rem;
-            color: #9A9A9A;
-            margin-top: -0.4rem;
-            margin-bottom: 1.5rem;
-            text-align: center;
-        }
         .beta-badge {
             display: inline-block;
             background-color: rgba(191, 166, 90, 0.18);
             border: 1px solid #BFA65A;
             color: #D7C589;
-            padding: 0.25rem 0.75rem;
+            padding: 0.25rem 0.8rem;
             border-radius: 999px;
             font-size: 0.9rem;
             font-weight: 700;
@@ -125,212 +35,888 @@
             vertical-align: middle;
             margin-left: 0.5rem;
         }
+        .intro-lead {
+            background-color: #121212;
+            border: 1px solid #3A3A3A;
+            border-left: 4px solid #BFA65A;
+            border-radius: 0.375rem;
+            padding: 1.5rem 1.75rem;
+            max-width: 60rem;
+            margin: 1.5rem auto 2rem;
+            text-align: left;
+            line-height: 1.7;
+            font-size: 1.03rem;
+        }
         .download-btn {
             display: inline-block;
             background: linear-gradient(180deg, #D7C589 0%, #BFA65A 100%);
             color: #0A0A0A;
             font-weight: 700;
-            font-size: 1.15rem;
+            font-size: 1.12rem;
             padding: 0.9rem 2.2rem;
             border-radius: 8px;
             text-decoration: none;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.45);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
         .download-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(191, 166, 90, 0.4);
         }
+
+        .quick-nav {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.55rem;
+            margin: 1.8rem auto 0;
+            max-width: 64rem;
+        }
+        .quick-nav a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.45rem 0.95rem;
+            background-color: #141414;
+            border: 1px solid #353535;
+            border-radius: 999px;
+            color: #D7C589;
+            text-decoration: none;
+            font-size: 0.92rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+        }
+        .quick-nav a:hover {
+            background-color: rgba(191, 166, 90, 0.14);
+            border-color: #BFA65A;
+            transform: translateY(-1px);
+        }
+
+        .section-divider { text-align: center; margin-top: 3.75rem; margin-bottom: 2rem; }
+        .divider-title { display: inline-block; font-size: 2rem; font-weight: 600; color: #BFA65A; padding: 0 1rem; margin: 0; }
+        .divider-sub { color: #9A9A9A; font-size: 0.98rem; margin: 0.5rem auto 0; max-width: 50rem; }
+        .divider-line {
+            border: 0;
+            height: 2px;
+            background-image: linear-gradient(to right, rgba(58, 58, 58, 0), rgba(191, 166, 90, 0.45), rgba(58, 58, 58, 0));
+            margin: 1.1rem 0;
+        }
+
+        details > summary {
+            list-style: none;
+            cursor: pointer;
+            transition: background-color 0.25s ease, border-color 0.25s ease;
+            padding: 1rem 1.2rem;
+            background-color: #121212;
+            border: 1px solid #343434;
+            border-radius: 0.375rem;
+            font-size: 1.12rem;
+            font-weight: 500;
+            color: #BFA65A;
+            user-select: none;
+        }
+        details > summary:hover {
+            border-color: rgba(191, 166, 90, 0.65);
+            background-color: #171717;
+        }
+        details > summary::-webkit-details-marker { display: none; }
+        details > summary::before {
+            content: '+';
+            font-size: 1.4em;
+            margin-right: 0.9rem;
+            color: #BFA65A;
+            transition: transform 0.25s ease;
+            display: inline-block;
+            line-height: 1;
+            font-weight: bold;
+        }
+        details[open] > summary {
+            background-color: rgba(191, 166, 90, 0.06);
+            border-color: rgba(191, 166, 90, 0.45);
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        details[open] > summary::before { transform: rotate(45deg); }
+
+        .details-content {
+            padding: 1.4rem 1.6rem;
+            border: 1px solid #343434;
+            border-top: none;
+            background-color: #121212;
+            border-bottom-left-radius: 0.375rem;
+            border-bottom-right-radius: 0.375rem;
+        }
+        .details-content p { margin-top: 0; margin-bottom: 0.85rem; }
+        .details-content ul, .details-content ol { list-style: none; padding-left: 0; margin: 0 0 1rem 0; }
+        .details-content li {
+            position: relative;
+            padding-left: 1.6rem;
+            margin-bottom: 0.65rem;
+            line-height: 1.6;
+        }
+        .details-content ul > li::before {
+            content: '■';
+            position: absolute;
+            left: 0.35rem;
+            top: 0.32em;
+            color: #BFA65A;
+            font-size: 0.72em;
+        }
+        .details-content ol { counter-reset: list-counter; }
+        .details-content ol > li { counter-increment: list-counter; }
+        .details-content ol > li::before {
+            content: counter(list-counter) ".";
+            position: absolute;
+            left: 0.1rem;
+            top: 0;
+            color: #BFA65A;
+            font-weight: 600;
+            text-align: right;
+            width: 1.1rem;
+        }
+        .details-content ul ul { margin-top: 0.55rem; padding-left: 1rem; margin-bottom: 0.3rem; }
+
+        .note-box {
+            margin: 1rem 0 1.2rem;
+            padding: 0.9rem 1.1rem;
+            background: rgba(191, 166, 90, 0.08);
+            border: 1px solid rgba(191, 166, 90, 0.32);
+            border-left: 3px solid #BFA65A;
+            border-radius: 4px;
+            font-size: 0.95rem;
+        }
+        .caution-box {
+            margin: 1rem 0 1.2rem;
+            padding: 0.9rem 1.1rem;
+            background: rgba(217, 83, 79, 0.1);
+            border: 1px solid rgba(217, 83, 79, 0.38);
+            border-left: 3px solid #e06c65;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            color: #e8c4c2;
+        }
+
+        .shots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+            gap: 1.15rem;
+            margin-top: 1.25rem;
+        }
+        .shots-grid.single {
+            grid-template-columns: minmax(0, 920px);
+            justify-content: center;
+        }
+        .shot-card {
+            margin: 0;
+            background: #0D0D0D;
+            border: 1px solid #2D2D2D;
+            border-radius: 0.5rem;
+            padding: 0.65rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .shot-card:hover {
+            border-color: rgba(191, 166, 90, 0.65);
+            box-shadow: 0 6px 24px rgba(191, 166, 90, 0.14);
+        }
+        .feature-img {
+            display: block;
+            width: 100%;
+            height: auto;
+            max-height: 460px;
+            object-fit: contain;
+            border-radius: 0.35rem;
+            cursor: zoom-in;
+            background: #080808;
+            transition: transform 0.22s ease;
+        }
+        .shots-grid.single .feature-img { max-height: 620px; }
+        .shot-card:hover .feature-img { transform: scale(1.01); }
+        .img-caption {
+            font-size: 0.88rem;
+            color: #9A9A9A;
+            margin-top: 0.6rem;
+            text-align: center;
+            line-height: 1.35;
+        }
+
+        .warning-box {
+            border: 2px solid #BFA65A;
+            background-color: rgba(191, 166, 90, 0.08);
+            border-radius: 0.5rem;
+            padding: 1.4rem 1.6rem;
+            margin-top: 2rem;
+        }
+        .warning-box h3 { color: #D7C589; margin: 0 0 0.6rem; text-align: center; font-size: 1.3rem; }
+
+        code {
+            background-color: #000000;
+            color: #D7C589;
+            padding: 0.15em 0.42em;
+            border-radius: 3px;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 0.92em;
+        }
+        strong { color: #E2E2E2; }
+
+        /* Лайтбокс для просмотра скриншотов во весь экран */
+        #bsh-lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(5, 7, 10, 0.94);
+            backdrop-filter: blur(4px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            z-index: 99999;
+            cursor: zoom-out;
+        }
+        #bsh-lightbox.open { display: flex; }
+        #bsh-lightbox img {
+            max-width: 96vw;
+            max-height: 86vh;
+            object-fit: contain;
+            border: 1px solid #BFA65A;
+            border-radius: 6px;
+            box-shadow: 0 18px 60px rgba(0, 0, 0, 0.9);
+            cursor: default;
+        }
+        #bsh-lightbox-caption {
+            margin-top: 12px;
+            color: #D7C589;
+            font-size: 0.98rem;
+            text-align: center;
+            max-width: 90vw;
+        }
+        #bsh-lightbox-close {
+            position: fixed;
+            top: 16px;
+            right: 22px;
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            border: 1px solid rgba(191, 166, 90, 0.5);
+            background: rgba(18, 18, 18, 0.9);
+            color: #D7C589;
+            font-size: 26px;
+            line-height: 1;
+            cursor: pointer;
+        }
+        #bsh-lightbox-close:hover { background: #BFA65A; color: #0A0A0A; }
+
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #121212; }
         ::-webkit-scrollbar-thumb { background-color: #BFA65A; border-radius: 4px; border: 2px solid #121212; }
         ::-webkit-scrollbar-thumb:hover { background-color: #D7C589; }
-        .section-divider { text-align: center; margin-top: 4rem; margin-bottom: 3rem; }
-        .divider-title { display: inline-block; font-size: 2.25rem; font-weight: 600; color: #BFA65A; padding: 0 1.5rem; }
-        .divider-line {
-            border: 0;
-            height: 2px;
-            background-image: linear-gradient(to right, rgba(58, 58, 58, 0), rgba(58, 58, 58, 0.75), rgba(58, 58, 58, 0));
-            margin: 1.5rem 0;
+
+        @media (max-width: 640px) {
+            .container { padding: 1.2rem 0.9rem 2rem; }
+            .divider-title { font-size: 1.55rem; }
+            .details-content { padding: 1.1rem; }
         }
-        .container { max-width: 72rem; margin: 0 auto; padding: 2rem; }
-        .warning-box {
-            border: 2px solid #BFA65A;
-            background-color: rgba(191, 166, 90, 0.1);
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-            margin-top: 2rem;
-        }
-        .warning-box h3 { color: #BFA65A; margin-top: 0; text-align: center; font-size: 1.4rem; }
-        code { background-color: #000000; color: #D7C589; padding: 0.2em 0.4em; border-radius: 3px; font-family: monospace; }
-        .text-center { text-align: center; }
-        .mb-8 { margin-bottom: 2rem; }
-        .space-y-4 > *:not(:last-child) { margin-bottom: 1rem; }
     </style>
 </head>
 <body>
 
     <div class="container">
 
-        <header class="text-center mb-8" style="padding: 1.5rem 0 0;">
-            <h1 style="font-size: 2.6rem; font-weight: bold; color: #D7C589; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem;">
-                Bibliotekarsha <span class="beta-badge">v0.6.0 BETA</span>
+        <header class="text-center mb-8" style="padding: 1rem 0 0;">
+            <h1 style="font-size: 2.55rem; font-weight: 700; color: #D7C589; letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 0.6rem 0;">
+                Bibliotekarsha <span class="beta-badge">BETA</span>
             </h1>
             <div class="intro-lead">
                 <p style="margin: 0 0 0.75rem 0;">
-                    Встроенной фильтрации в библиотеке Steam катастрофически не хватает гибкости и базовых вещей: невозможно быстро оставить только игры с русской озвучкой или субтитрами, отсеять проекты, где нужный жанр затерялся на 15-м месте в списке меток, отфильтровать ранний доступ или просеять библиотеку по оригинальному году выхода, рейтингу и количеству отзывов.
+                    <strong>Bibliotekarsha</strong> — комплексный модульный плагин для клиента Steam на базе <strong>Millennium 3.6.3+</strong>, который объединяет инструменты для <strong>Библиотеки</strong>, <strong>Магазина</strong>, <strong>Каталога поиска</strong>, <strong>Списка желаемого</strong>, <strong>Ленты активности</strong> и <strong>Новостного центра</strong>.
                 </p>
                 <p style="margin: 0;">
-                    <strong>Bibliotekarsha</strong> — модульный плагин для клиента Steam (на базе Millennium), который закрывает эти пробелы, добавляет фильтрацию по всей библиотеке и отдельным коллекциям без разрушения дерева папок, а также интегрирует поиск русификаторов с <strong>Zone of Games</strong> прямо на страницу игры.
+                    Все модули гибко настраиваются через кнопку <strong>⚙ BSH</strong> в шапке клиента Steam (со встроенным поиском, подробной справкой со скриншотами и единым резервным копированием всех баз). Нажмите на любой скриншот ниже, чтобы открыть его во весь экран.
                 </p>
             </div>
+
+            <div style="margin-bottom: 1.4rem;">
+                <a href="https://github.com/0wn3dg0d/Bibliotekarsha/releases" target="_blank" rel="noopener noreferrer" class="download-btn">
+                    Скачать (.star) с GitHub Releases
+                </a>
+            </div>
+
+            <nav class="quick-nav" aria-label="Разделы описания">
+                <a href="#sec-library">📚 Библиотека Steam</a>
+                <a href="#sec-gamepage">🎮 Страница игры</a>
+                <a href="#sec-catalog">🔎 Каталог поиска</a>
+                <a href="#sec-community">📰 Лента активности</a>
+                <a href="#sec-wishlist-news">🎁 Желаемое и Новости</a>
+                <a href="#sec-account">🧹 Аккаунт</a>
+                <a href="#sec-incognito">🕵️ Режим «Инкогнито»</a>
+                <a href="#sec-settings">⚙ Настройки и Бэкап</a>
+                <a href="#sec-install">⬇ Установка</a>
+            </nav>
         </header>
 
-        <div class="text-center mb-8">
-            <a href="https://github.com/0wn3dg0d/Bibliotekarsha/releases" target="_blank" rel="noopener noreferrer" class="download-btn">
-                Скачать v0.6.0 Beta (.star) с GitHub Releases
-            </a>
-        </div>
-
-        <div class="text-center mb-8">
-            <img src="https://i.imgur.com/9DqTY9b.png" alt="Окно фильтров Bibliotekarsha и массовое применение ко всем коллекциям" class="feature-img" style="max-width: 1000px; width: 100%;">
-            <p class="img-caption">Фильтрация коллекций с активным фильтром «Бывший EA / Переиздание», русской озвучкой и двойными счётчиками</p>
-        </div>
-
-        <div class="section-divider">
+        <!-- ==================== 1. БИБЛИОТЕКА STEAM ==================== -->
+        <div class="section-divider" id="sec-library">
             <hr class="divider-line">
-            <h2 class="divider-title">Функционал плагина</h2>
+            <h2 class="divider-title">📚 Библиотека Steam</h2>
+            <p class="divider-sub">Фильтры всей библиотеки и коллекций, рулетка, двойные счётчики, блок «Сведения об игре», сводка NFO и Наблюдатель.</p>
             <hr class="divider-line">
         </div>
 
         <main class="space-y-4">
-            <details open>
-                <summary>Два режима работы: общая фильтрация и фильтрация по коллекциям</summary>
-                <div class="details-content">
-                    <ul>
-                        <li><strong>Общая фильтрация по всему аккаунту:</strong> В стандартной панели фильтров Steam (кнопка воронки над списком игр слева) добавлена кнопка <strong>Bibliotekarsha</strong>. Она просеивает все игры на аккаунте сразу во всех коллекциях, сохраняя привычное дерево папок в левом меню.</li>
-                        <li><strong>Фильтрация внутри конкретной коллекции:</strong> В верхней панели любой открытой коллекции (рядом со списком сортировки) появляется кнопка <strong>Bibliotekarsha</strong>. Настроенные фильтры применяются изолированно только к этой коллекции.</li>
-                        <li><strong>Массовое применение ко всем коллекциям и двойные счётчики:</strong> Внутри окна настроек есть кнопки <strong>«Применить ко всем коллекциям»</strong> и <strong>«Снять со всех коллекций»</strong>. При применении рядом с каждой коллекцией в левой панели появляется цветной бейдж <code>подходит / всего</code> (голубой, если подходящие игры есть, и красный, если <code>0</code>) — вы сразу видите статистику по всем папкам, не заходя в каждую из них.</li>
-                        <li><strong>Свободное плавающее окно и управление модулями:</strong> Окно настроек можно перетаскивать за верхнюю панель в любую область экрана и закрывать по <code>Esc</code>. Любую комбинацию условий можно сохранить как шаблон, а во вкладке <strong>«Модули»</strong> — включать и отключать отдельные компоненты плагина без перезапуска Steam.</li>
-                    </ul>
-
-                    <details style="margin-top: 1.5rem;">
-                        <summary style="font-size: 1rem;">Показать скриншот общей фильтрации по всей библиотеке</summary>
-                        <div class="details-content text-center">
-                            <img src="https://i.imgur.com/igbgzGk.png" alt="Общая фильтрация по всей библиотеке Steam" class="feature-img" style="max-width: 960px; width: 100%;">
-                            <p class="img-caption">Общая фильтрация по всем играм аккаунта через стандартную панель фильтров Steam</p>
-                        </div>
-                    </details>
-                </div>
-            </details>
-
             <details>
-                <summary>Критерии фильтрации</summary>
+                <summary>Общая фильтрация библиотеки (BSH)</summary>
                 <div class="details-content">
+                    <p>Добавляет кнопку <strong>BSH</strong> в стандартную панель фильтров библиотеки Steam. Позволяет отфильтровать все игры аккаунта по дополнительным параметрам, сохраняя привычное дерево коллекций в левом меню:</p>
                     <ul>
-                        <li><strong>Локализация (русский язык):</strong>
-                            <ul>
-                                <li><strong>Русская озвучка</strong> — полная локализация со звуком.</li>
-                                <li><strong>Субтитры / интерфейс</strong> — переведён текст или субтитры (без русской озвучки).</li>
-                                <li><strong>Без русского языка</strong> — официальный перевод отсутствует.</li>
-                            </ul>
-                        </li>
-                        <li><strong>Ранний доступ (Early Access):</strong>
-                            <ul>
-                                <li><strong>Только ранний доступ</strong> — проекты, находящиеся в стадии Early Access.</li>
-                                <li><strong>Бывший EA / Переиздание</strong> — вышедшие игры, у которых в базе Steam зафиксирована более ранняя оригинальная дата релиза.</li>
-                                <li><strong>Скрыть ранний доступ</strong> — исключение всех игр в раннем доступе.</li>
-                            </ul>
-                        </li>
-                        <li><strong>Умные метки (по весу и исключениям):</strong>
-                            <ul>
-                                <li>Поиск по русским названиям тегов Steam.</li>
-                                <li><strong>Фильтр по актуальности (весу) метки (1–20):</strong> позволяет задать максимальную позицию тега в карточке игры (например, <code>до 3</code> оставит только те игры, где выбранный жанр входит в топ-3 тегов, отсеивая игры с второстепенными метками).</li>
-                                <li><strong>Исключённые метки:</strong> полностью убирает из выдачи игры, содержащие выбранный тег.</li>
-                            </ul>
-                        </li>
-                        <li><strong>Рейтинг и количество отзывов:</strong> фильтрация по диапазону количества обзоров («От — До») и проценту положительных отзывов (0–100%).</li>
-                        <li><strong>Оригинальный год выхода:</strong> выбор одного или нескольких годов релиза с поиском и подсчётом игр. Приоритет отдаётся оригинальной дате выхода игры (<code>original_release_date</code>), а не дате переиздания в Steam.</li>
+                        <li><strong>Русский язык:</strong> озвучка, субтитры / интерфейс, без перевода.</li>
+                        <li><strong>Ранний доступ:</strong> только в раннем доступе, бывшие игры раннего доступа / переиздания или скрытие раннего доступа.</li>
+                        <li><strong>Отзывы и рейтинг:</strong> точные диапазоны по количеству обзоров и проценту положительных отзывов.</li>
+                        <li><strong>Год выхода:</strong> выбор одного или нескольких лет со встроенным поиском (приоритет отдаётся оригинальной дате релиза <code>original_release_date</code>).</li>
+                        <li><strong>Шаблоны:</strong> сохранение наборов фильтров для быстрого переключения в один щелчок.</li>
                     </ul>
-                </div>
-            </details>
-
-            <details>
-                <summary>Страница игры: статус перевода, кнопка NFO и поиск русификаторов ZOG</summary>
-                <div class="details-content">
-                    <ul>
-                        <li><strong>Индикатор русского языка на странице игры:</strong> Рядом с кнопкой «Играть» добавляется блок «Русский язык» с точным статусом (<em>Русская озвучка</em>, <em>Субтитры + интерфейс</em>, <em>Только интерфейс</em>, <em>Только субтитры</em> или <em>Без русского</em>).</li>
-                        <li><strong>Кнопка NFO (<code>i</code>) и интеграция с Zone of Games:</strong> Рядом со статусом перевода добавлена круглая кнопка <strong><code>i</code></strong>, открывающая окно сводки <strong>NFO</strong>. В нём автоматически выполняется поиск игры в базе <strong>Zone of Games</strong> с расчётом процента совпадения и выводом прямых ссылок на доступные русификаторы.</li>
-                        <li><strong>Умное кэширование и автообновление:</strong> При первом запуске плагин автоматически собирает метаданные об играх в фоне и сохраняет их в локальную базу <code>IndexedDB</code>. Раз в <strong>14 дней</strong> данные автоматически перепроверяются для поддержания актуальности.</li>
-                    </ul>
-
-                    <div class="text-center" style="margin-top: 1.5rem;">
-                        <img src="https://i.imgur.com/X8QBzd2.png" alt="Статус перевода и кнопка NFO на странице игры в библиотеке" class="feature-img" style="max-width: 960px; width: 100%;">
-                        <p class="img-caption">Информация о наличии русского перевода и кнопка NFO (i) на странице игры в библиотеке</p>
-
-                        <img src="https://i.imgur.com/1VmROPA.png" alt="Окно NFO с найденными русификаторами на Zone of Games" class="feature-img" style="max-width: 960px; width: 100%;">
-                        <p class="img-caption">Окно NFO со списком доступных русификаторов с Zone of Games</p>
+                    <div class="note-box">
+                        <strong>Как работают «Умные метки»:</strong> у каждой игры в Steam может быть до 20 пользовательских меток, выстроенных по убыванию точности — главные жанры и особенности всегда находятся в самом начале списка, а второстепенные в конце. Число справа от добавленной метки задаёт её минимальный приоритет (например, <strong>до 5</strong> оставит игры, где нужный жанр входит в первую пятёрку, а не висит на 18-м месте). Метки в столбце исключений полностью скрывают игры с ними.
+                    </div>
+                    <div class="shots-grid">
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/library-filter-btn.jpg" alt="Кнопка BSH в панели фильтров библиотеки" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Кнопка BSH в панели фильтров библиотеки</figcaption>
+                        </figure>
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/library-filter-modal.jpg" alt="Окно фильтров Bibliotekarsha" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Окно фильтров Bibliotekarsha</figcaption>
+                        </figure>
                     </div>
                 </div>
             </details>
 
             <details>
-                <summary>История изменений (Changelog)</summary>
+                <summary>Фильтрация внутри коллекций и двойные счётчики в сайдбаре</summary>
                 <div class="details-content">
-                    <h3 style="color: #D7C589; margin-top: 0;">Версия 0.6.0 (Beta)</h3>
+                    <p>Добавляет кнопку <strong>BSH</strong> в верхнюю панель каждой коллекции рядом со списком сортировки. При активном фильтре кнопка показывает счётчик вида <code>подходит/всего</code> и кнопку быстрого сброса <code>×</code>.</p>
                     <ul>
-                        <li><strong>Кнопка NFO (<code>i</code>) и поиск русификаторов на Zone of Games:</strong> на страницу игры в библиотеке рядом с кнопкой «Играть» добавлена кнопка <code>i</code>, открывающая окно NFO с автоматическим поиском игры на ZoneOfGames.ru и прямыми ссылками на русификаторы.</li>
-                        <li><strong>Фильтр по раннему доступу:</strong> добавлен блок фильтрации <em>«Только ранний доступ»</em>, <em>«Бывший EA / Переиздание»</em> и <em>«Скрыть ранний доступ»</em>.</li>
-                        <li><strong>Приоритет оригинальной даты релиза:</strong> при определении года выхода плагин теперь в первую очередь использует оригинальную дату выпуска игры (<code>original_release_date</code>), а локальная база обновлена до <code>BibliotekarshaDB_v6</code>.</li>
+                        <li><strong>Независимые фильтры:</strong> для каждой коллекции можно настроить свой отдельный фильтр по языку, раннему доступу, году выхода, обзорам, рейтингу и умным меткам.</li>
+                        <li><strong>Массовое применение:</strong> кнопки «Применить ко всем коллекциям» и «Снять со всех коллекций» без затрагивания общего списка игр.</li>
+                        <li><strong>Подписи под обложками:</strong> при активном фильтре под каждой карточкой игры в коллекции выводится уровень русской локализации (например, «Русская озвучка» или «Субтитры + интерфейс»).</li>
+                        <li><strong>Двойные счётчики в левом меню:</strong> рядом с каждой отфильтрованной коллекцией появляется цветной бейдж <code>подходит/всего</code> (голубой — если игры есть, красный <code>0/...</code> — если совпадений нет).</li>
                     </ul>
+                    <div class="shots-grid">
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/collection-filter-header.jpg" alt="Кнопка BSH в шапке коллекции" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Кнопка BSH в шапке коллекции</figcaption>
+                        </figure>
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/collection-filter-cards.jpg" alt="Отфильтрованная коллекция с подписями локализации" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Отфильтрованная коллекция с подписями локализации</figcaption>
+                        </figure>
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/sidebar-counters.jpg" alt="Счётчики подходит/всего в боковой панели коллекций" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Счётчики «подходит/всего» в боковой панели коллекций</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </details>
 
-                    <h3 style="color: #D7C589; margin-top: 1.5rem;">Версия 0.5.1 (Beta)</h3>
+            <details>
+                <summary>Рулетка библиотеки (🎲)</summary>
+                <div class="details-content">
+                    <p>Добавляет кнопку <strong>🎲 Рулетка</strong> под кнопкой BSH в панели общих фильтров библиотеки. Помогает выбрать случайную игру с учётом всех активных фильтров Steam и Bibliotekarsha.</p>
                     <ul>
-                        <li><strong>Исправлена работа общего фильтра библиотеки:</strong> устранён баг перещёлкивания левой панели между деревом коллекций и единым списком игр.</li>
-                        <li><strong>Свободное плавающее окно и модульная архитектура:</strong> окно фильтров вынесено поверх интерфейса Steam с перетаскиванием за шапку и добавлена вкладка «Модули».</li>
+                        <li><strong>Список коллекций слева:</strong> «Избранное», ваши коллекции и игры «Без категории» со счётчиком подходящих игр, поиском, кнопками «Выбрать все» / «Убрать все» и <strong>выделением протяжкой</strong> (зажмите ЛКМ и проведите по списку).</li>
+                        <li><strong>Запуск рулетки:</strong> опция «Приоритет по отзывам» повышает шанс выпадения игр с высоким рейтингом и большим числом отзывов.</li>
+                        <li><strong>Просмотр подборки:</strong> переключение в сетку всех отобранных игр с поиском и сортировкой по имени, году выхода, умному рейтингу и наигранному времени.</li>
+                        <li><strong>Карточка игры:</strong> постер, рейтинг, наигранное время, русский язык, дата выхода, разработчик, издатель, теги и описание, а также кнопки <strong>«Перейти в библиотеке»</strong>, <strong>«▶ Запустить»</strong> и <strong>«Магазин ↗»</strong>.</li>
                     </ul>
+                    <div class="shots-grid">
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/library-roulette-main.jpg" alt="Окно рулетки со списком коллекций и результатом" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Окно рулетки со списком коллекций и результатом</figcaption>
+                        </figure>
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/library-roulette-grid.jpg" alt="Режим просмотра всей подборки с сортировкой" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Режим просмотра всей подборки с сортировкой</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </details>
 
-                    <h3 style="color: #D7C589; margin-top: 1.5rem;">Версия 0.5.0 (Beta)</h3>
+            <details>
+                <summary>Страница игры в библиотеке: «Сведения об игре» и сводка NFO (i)</summary>
+                <div class="details-content">
                     <ul>
-                        <li>Первый публичный бета-релиз плагина с фильтрацией по русской локализации, умным меткам по весу (1–20), исключаемым тегам, отзывам, рейтингу, году выхода и шаблонам.</li>
+                        <li><strong>Секция «Сведения об игре» в правой колонке:</strong> выводит уровень русского перевода с цветным индикатором и точный статус раннего доступа (сколько времени игра в EA или сколько провела в EA до релиза).</li>
+                        <li><strong>Кнопка сводки NFO (<code>i</code>) рядом с «Играть»:</strong> открывает окно сводки с карточками и кнопкой <strong>«✎ Заметки»</strong> в шапке (синхронизировано с заметками в магазине):
+                            <ul>
+                                <li><strong>HowLongToBeat:</strong> время прохождения (сюжет, сюжет + доп., 100%, все стили) с выбором совпадений.</li>
+                                <li><strong>Zone of Games:</strong> автоматический поиск игры на ZoneOfGames.ru и прямые ссылки на русификаторы с указанием размера.</li>
+                                <li><strong>Время друзей и Глобальные достижения:</strong> лидеры по часам среди друзей (с открытием профиля), среднее/минимальное время и статистика достижений Steam.</li>
+                                <li><strong>Расширенные обзоры Steam:</strong> Тотальные (включая ключи, с Глобальным монитором по 29 языкам и круговой диаграммой), Безкитайские и Русские (с чтением русскоязычных отзывов).</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <div class="shots-grid">
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/library-game-details-card.jpg" alt="Секция «Сведения об игре» в правой колонке библиотеки" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Секция «Сведения об игре» в правой колонке библиотеки</figcaption>
+                        </figure>
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/library-nfo-button.jpg" alt="Кнопка i рядом с панелью статистики" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Кнопка «i» рядом с панелью статистики</figcaption>
+                        </figure>
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/library-nfo-modal.jpg" alt="Окно сводки NFO в библиотеке" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Окно сводки NFO в библиотеке</figcaption>
+                        </figure>
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/library-nfo-reviews.jpg" alt="Карточка обзоров в окне NFO библиотеки" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Карточка обзоров в окне NFO библиотеки</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </details>
+
+            <details>
+                <summary>Наблюдатель и Календарь релизов</summary>
+                <div class="details-content">
+                    <p>Добавляет кнопку <strong>Наблюдатель</strong> в верхнюю панель клиента Steam со статусами актуальности базы для Желаемого (<code>Ж</code>), Библиотеки (<code>Б</code>) и счётчиком непрочитанных событий. Данные хранятся раздельно для каждого аккаунта Steam.</p>
+                    <ul>
+                        <li><strong>Список желаемого:</strong> отслеживает изменения даты выхода, выход из раннего доступа, добавление/изменение/удаление русского языка, появление или скрытие демо и плейтестов, а также снятие игры с продажи и возврат в магазин.</li>
+                        <li><strong>Библиотека:</strong> отслеживает выход из раннего доступа, изменения русской локализации и снятие/возврат игр (с настройкой пропуска игр, у которых уже есть русский язык).</li>
+                        <li><strong>Календарь релизов:</strong> отдельное окно с календарём по месяцам для игр из вашего желаемого, фильтрами по годам и экспортом в файл <code>.ics</code>.</li>
+                    </ul>
+                    <div class="shots-grid">
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/watcher-notifications.jpg" alt="Окно уведомлений Наблюдателя" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Окно уведомлений Наблюдателя</figcaption>
+                        </figure>
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/watcher-calendar.jpg" alt="Окно календаря релизов" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Окно календаря релизов</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </details>
+        </main>
+
+        <!-- ==================== 2. СТРАНИЦА ИГРЫ (МАГАЗИН STEAM) ==================== -->
+        <div class="section-divider" id="sec-gamepage">
+            <hr class="divider-line">
+            <h2 class="divider-title">🎮 Страница игры (Магазин Steam)</h2>
+            <p class="divider-sub">Индикаторы перевода, расширенные обзоры и Глобальный монитор, NFO, плашка EA, SalesMaster, анализатор цен, PICS, GIFT, заметки и доп. ссылки.</p>
+            <hr class="divider-line">
+        </div>
+
+        <main class="space-y-4">
+            <details>
+                <summary>Индикаторы русского языка, дополнительные обзоры и Глобальный монитор</summary>
+                <div class="details-content">
+                    <ol>
+                        <li>Справа от обложки игры добавляет три значка-индикатора наличия русского языка: <strong>Интерфейс</strong>, <strong>Озвучка</strong> и <strong>Субтитры</strong>.</li>
+                        <li>Под стандартным блоком отзывов выводит расширенную статистику (включая обзоры от ключей): <strong>Тотальные</strong>, <strong>Безкитайские</strong> (без упрощённого китайского) и <strong>Русские</strong>. Поддерживается автозагрузка в настройках.</li>
+                        <li>Нажатие на <strong>«Русские»</strong> открывает окно русскоязычных обзоров с переключением «Самые полезные» / «Недавние» и подгрузкой страниц.</li>
+                        <li>Нажатие на <strong>«Тотальные»</strong> открывает <strong>Глобальный монитор обзоров</strong> — таблицу по 29 языкам Steam с долями и интерактивной круговой диаграммой.</li>
+                    </ol>
+                    <div class="shots-grid">
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/store-indicators-reviews.jpg" alt="Индикаторы русского языка и блок доп. обзоров" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Индикаторы русского языка и блок доп. обзоров</figcaption>
+                        </figure>
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/store-russian-reviews.jpg" alt="Окно русскоязычных обзоров" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Окно русскоязычных обзоров</figcaption>
+                        </figure>
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/store-global-monitor.jpg" alt="Глобальный монитор обзоров по языкам" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Глобальный монитор обзоров по 29 языкам</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </details>
+
+            <details>
+                <summary>Кнопка NFO и плашка раннего доступа у обложки</summary>
+                <div class="details-content">
+                    <ul>
+                        <li><strong>Кнопка NFO:</strong> располагается под индикаторами русского языка и открывает сводное окно с тремя карточками — <strong>HowLongToBeat</strong>, <strong>Русификаторы (Zone of Games)</strong> и <strong>Друзья и Достижения</strong>. Дополнительно восстанавливает блок друзей в правой колонке, если страница открыта через режим «Инкогнито».</li>
+                        <li><strong>Плашка раннего доступа:</strong> компактный значок <strong>«В EA»</strong> или <strong>«Покинула EA»</strong> над индикаторами; при наведении показывает точный срок нахождения игры в раннем доступе.</li>
+                    </ul>
+                    <div class="shots-grid">
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/store-nfo-modal.jpg" alt="Сводное окно NFO на странице игры в магазине" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Сводное окно NFO на странице игры в магазине</figcaption>
+                        </figure>
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/store-ea-badge.jpg" alt="Плашка раннего доступа и всплывающая подсказка" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Плашка раннего доступа и всплывающая подсказка</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </details>
+
+            <details>
+                <summary>Агрегатор цен — SalesMaster (%)</summary>
+                <div class="details-content">
+                    <p>Добавляет кнопку <strong>%</strong> в панель действий на странице игры (рядом с «Поделиться»). Сравнивает предложения текущей страницы Steam и <strong>17 магазинов ключей и гифтов</strong> (SteamBuy, Playo, SteamPay, Gabestore, GamersBase, GamesForFarm, Gamazavr, GameRay, KupiKod, Zaka-zaka, Buka, GGSEL, Plati.Market, МТС Fog Play, Sous-Buy, Ростелеком, Gamers Hub), автоматически запрашивая оригинальное английское название игры.</p>
+                    <ul>
+                        <li><strong>Выбор издания / DLC (✎):</strong> выбор конкретного издания или дополнения со страницы игры либо ручное редактирование поискового запроса.</li>
+                        <li><strong>Фильтр по названию:</strong> логические операторы <code>{и}</code>, <code>{или}</code>, <code>{не}</code> + контекстное меню по выделенному тексту (ПКМ) для добавления слов в фильтр или исключения.</li>
+                        <li><strong>Панели и удобства:</strong> диапазоны цен и скидок, переключатели магазинов, импорт/экспорт слов-исключений, сортировка, переключение валюты <strong>RUB / USD</strong> и сворачивание окна (<code>—</code>) без потери результатов.</li>
+                    </ul>
+                    <div class="shots-grid">
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/store-salesmaster-main.jpg" alt="Окно агрегатора цен SalesMaster" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Окно агрегатора цен SalesMaster</figcaption>
+                        </figure>
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/store-salesmaster-editions.jpg" alt="Выбор конкретного издания или DLC" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Выбор конкретного издания или DLC</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </details>
+
+            <details>
+                <summary>Анализатор региональных цен, проверка PICS и подарки GIFT</summary>
+                <div class="details-content">
+                    <ul>
+                        <li><strong>Анализатор региональных цен:</strong> кнопка над блоком покупки. Сравнивает цены игры по <strong>41 региону Steam</strong>, показывает место выбранной страны в мировом рейтинге и отклонение от трёх моделей Valve (<em>Умная цена</em>, <em>ППС</em>, <em>Прямой курс</em>).</li>
+                        <li><strong>Проверка строгих ограничений (PICS):</strong> напрямую запрашивает у серверов Steam CM скрытый список ограниченных стран (<code>purchaserestrictedcountries</code>) для недоступных пакетов и выводит красную плашку <strong>«🚫 Строгие ограничения»</strong> рядом с кнопкой «В корзину».</li>
+                        <li><strong>Доступность подарков (GIFT):</strong> позволяет выбрать регион друга, показывает его локальную цену в вашей валюте, итоговую стоимость списания по правилам Steam и наличие жёстких ограничений PICS.</li>
+                    </ul>
+                    <div class="caution-box">
+                        <strong>Примечание:</strong> полный сбор Анализатора цен отправляет ~41 запрос к Steam API. Слишком частый запуск подряд на десятках игр может привести к временному ограничению Steam API на 5–15 минут.
+                    </div>
+                    <div class="shots-grid">
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/store-price-analyzer.jpg" alt="Таблица анализатора региональных цен" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Таблица анализатора региональных цен</figcaption>
+                        </figure>
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/store-pics-warning.jpg" alt="Предупреждение о строгих региональных ограничениях" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Предупреждение о строгих региональных ограничениях (PICS)</figcaption>
+                        </figure>
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/store-gift-helper.jpg" alt="Окно проверки доступности подарка GIFT" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Окно проверки доступности подарка GIFT</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </details>
+
+            <details>
+                <summary>Личные заметки, система оценок и дополнительные ссылки</summary>
+                <div class="details-content">
+                    <ul>
+                        <li><strong>Личные заметки и оценки:</strong> кнопка с карандашом на странице игры (подсвечивается зелёным при наличии записи). Редактор включает текстовую заметку, 5 критериев по 10-звёздочной шкале (Графика, Сюжет, Геймплей, Звук и музыка, Атмосфера) с автоподсчётом среднего балла, личную оценку 0–100 и галерею «Все заметки» с сортировкой и JSON-экспортом. База синхронизируется с окном NFO в библиотеке.</li>
+                        <li><strong>Дополнительные ссылки в шапке игры:</strong> кнопки <strong>Копировать EN</strong> (оригинальное английское название), <strong>PCGamingWiki</strong>, <strong>SteamDB</strong> и возврат на «Страницу в магазине» из центра сообщества.</li>
+                    </ul>
+                    <div class="shots-grid">
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/store-notes-editor.jpg" alt="Окно редактора заметки и оценок" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Окно редактора заметки и оценок</figcaption>
+                        </figure>
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/store-notes-gallery.jpg" alt="Галерея всех заметок" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Галерея всех заметок</figcaption>
+                        </figure>
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/store-external-links.jpg" alt="Добавленные кнопки в шапке игры" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Добавленные кнопки в шапке игры</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </details>
+        </main>
+
+        <!-- ==================== 3. КАТАЛОГ ПОИСКА (МАГАЗИН) ==================== -->
+        <div class="section-divider" id="sec-catalog">
+            <hr class="divider-line">
+            <h2 class="divider-title">🔎 Каталог поиска (Магазин)</h2>
+            <p class="divider-sub">Всплывающие карточки игр, фильтры перевода/DLC/EA/демо, умные метки и массовое управление игнор-листом на <code>/search/</code>.</p>
+            <hr class="divider-line">
+        </div>
+
+        <main class="space-y-4">
+            <details>
+                <summary>Карточки при наведении, расширенные фильтры и «Умные метки»</summary>
+                <div class="details-content">
+                    <ul>
+                        <li><strong>Карточки игр при наведении:</strong> сводка слева от строки выдачи (издатели, разработчики, серия, отзывы, ранний доступ, поддержка русского и опционально английского языков, топ-5 меток и описание).</li>
+                        <li><strong>Расширенные фильтры в правом сайдбаре:</strong> Русский перевод (текст / озвучка / без перевода), «Только ваши DLC» (с фиолетовой подсветкой дополнений к вашим играм), Ранний доступ, Демо и плейтесты, точные диапазоны обзоров и рейтинга, а также окно настройки <strong>«Умных меток»</strong> с приоритетами (1–20) и исключениями.</li>
+                    </ul>
+                    <div class="shots-grid">
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/catalog-tooltip.jpg" alt="Всплывающая карточка игры в поиске" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Всплывающая карточка игры в поиске</figcaption>
+                        </figure>
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/catalog-sidebar-filters.jpg" alt="Новые блоки фильтров в сайдбаре каталога" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Новые блоки фильтров в сайдбаре каталога</figcaption>
+                        </figure>
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/catalog-smart-tags.jpg" alt="Окно настройки «Умных меток»" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Окно настройки «Умных меток»</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </details>
+
+            <details>
+                <summary>Массовое скрытие и «Раскрыватель» игнор-листа</summary>
+                <div class="details-content">
+                    <p>Добавляет в правый сайдбар поиска блок <strong>«Скрытие»</strong> с двумя перетаскиваемыми окнами:</p>
+                    <ul>
+                        <li><strong>Раскрыватель:</strong> находит на странице поиска игры из вашего списка «Не интересно», фильтрует их по обзорам и рейтингу и пакетно возвращает подходящие обратно в каталог.</li>
+                        <li><strong>Массовое скрытие:</strong> добавляет круглые чекбоксы слева от строк выдачи для быстрой отметки и пакетного скрытия игр в игнор-лист с защитой от лимитов Steam (429).</li>
+                    </ul>
+                    <div class="shots-grid">
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/catalog-unhider.jpg" alt="Окно «Раскрыватель»" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Окно «Раскрыватель»</figcaption>
+                        </figure>
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/catalog-mass-hider.jpg" alt="Режим чекбоксов «Массовое скрытие»" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Режим чекбоксов «Массовое скрытие»</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </details>
+        </main>
+
+        <!-- ==================== 4. ЛЕНТА АКТИВНОСТИ ==================== -->
+        <div class="section-divider" id="sec-community">
+            <hr class="divider-line">
+            <h2 class="divider-title">📰 Лента активности</h2>
+            <p class="divider-sub">Карточки игр при наведении, восстановление скрытых обложек и замена неработающих YouTube-плееров на <code>steamcommunity.com/my/home</code>.</p>
+            <hr class="divider-line">
+        </div>
+
+        <main class="space-y-4">
+            <details>
+                <summary>Карточки игр, обложки и исправление YouTube-плееров</summary>
+                <div class="details-content">
+                    <ul>
+                        <li><strong>Карточки игр и восстановление обложек:</strong> подгружает пустые обложки регионально скрытых игр в ленте активности и при наведении на ссылки показывает карточку с шапкой, датой выхода, издателем, разработчиком, отзывами, ранним доступом, русским (и опционально английским) языком, метками и описанием.</li>
+                        <li><strong>Исправление YouTube-плееров:</strong> заменяет неработающие встроенные iframe-плееры YouTube на превью с кнопкой воспроизведения, открывающее ролик напрямую на YouTube.</li>
+                    </ul>
+                    <div class="shots-grid">
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/community-home-tooltip.jpg" alt="Всплывающая карточка игры в ленте активности" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Всплывающая карточка игры в ленте активности</figcaption>
+                        </figure>
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/community-youtube-fix.jpg" alt="Превью видео вместо сломанного плеера" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Превью видео вместо сломанного плеера</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </details>
+        </main>
+
+        <!-- ==================== 5. ЖЕЛАЕМОЕ И НОВОСТИ ==================== -->
+        <div class="section-divider" id="sec-wishlist-news">
+            <hr class="divider-line">
+            <h2 class="divider-title">🎁 Желаемое и Новости</h2>
+            <p class="divider-sub">Анализатор цен и помощник подарков в Списке желаемого + фильтр скрытия новостей в Новостном центре.</p>
+            <hr class="divider-line">
+        </div>
+
+        <main class="space-y-4">
+            <details>
+                <summary>Анализатор и помощник подарков в Списке желаемого (<code>/wishlist/</code>)</summary>
+                <div class="details-content">
+                    <p>Добавляет кнопку лупы рядом с заголовком списка желаемого. Загружает карточки всех игр списка (пачками до 150 игр) и предоставляет:</p>
+                    <ul>
+                        <li>Сортировку по цене, скидке, названию, дате выхода и рейтингу обзоров.</li>
+                        <li>Расчёт отклонения цены от трёх моделей Valve (Умная цена, ППС, Курс) и фильтр по РРЦ.</li>
+                        <li>Полный набор фильтров: скидки, цена, обзоры, рейтинг, дата выхода, русский язык, ранний доступ, статус релиза, демо/плейтесты и умные метки.</li>
+                        <li><strong>Режим подарков (🎁):</strong> выбор региона друга, пересчёт цен в вашу валюту и цветовая индикация разницы (зелёная — без переплаты, красная — у друга дороже).</li>
+                    </ul>
+                    <div class="shots-grid single">
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/wishlist-gift-helper.jpg" alt="Окно анализатора и помощника подарков в желаемом" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Окно анализатора и помощника подарков в списке желаемого</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </details>
+
+            <details>
+                <summary>Фильтр и скрытие новостей в Новостном центре (<code>/news/</code>)</summary>
+                <div class="details-content">
+                    <p>Добавляет чекбоксы для отметки неинтересных новостей и перетаскиваемую панель управления в Новостном центре Steam.</p>
+                    <ul>
+                        <li>Выбранные новости скрываются кнопкой «Скрыть выбранные» (база хранится раздельно для каждого аккаунта Steam).</li>
+                        <li>После скрытия на 6 секунд появляется кнопка «Отменить».</li>
+                        <li>Через «Показать скрытое» и «Хранилище» можно в любой момент просмотреть и вернуть скрытые материалы.</li>
+                    </ul>
+                    <div class="shots-grid single">
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/news-filter-panel.jpg" alt="Панель управления и чекбоксы в Новостном центре" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Панель управления и чекбоксы в Новостном центре</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </details>
+        </main>
+
+        <!-- ==================== 6. АККАУНТ ==================== -->
+        <div class="section-divider" id="sec-account">
+            <hr class="divider-line">
+            <h2 class="divider-title">🧹 Аккаунт</h2>
+            <p class="divider-sub">Умная очистка списка скрытых продуктов на <code>store.steampowered.com/account/notinterested/</code>.</p>
+            <hr class="divider-line">
+        </div>
+
+        <main class="space-y-4">
+            <details>
+                <summary>Умная очистка списка игнорируемых игр</summary>
+                <div class="details-content">
+                    <p>Добавляет кнопку <strong>«Управление очисткой»</strong> на странице скрытых продуктов:</p>
+                    <ol>
+                        <li>Собирает число обзоров и рейтинг для всех игр из вашего игнор-листа.</li>
+                        <li>Позволяет задать диапазоны обзоров и рейтинга (%) — например, найти качественные игры с рейтингом от 80% и выше.</li>
+                        <li>Аккуратно возвращает подходящие игры обратно в рекомендации с автоматической паузой при лимитах запросов Steam (429).</li>
+                    </ol>
+                    <div class="shots-grid single">
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/account-ignored-cleaner.jpg" alt="Окно умной очистки игнор-листа" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Окно умной очистки списка игнорируемых игр</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </details>
+        </main>
+
+        <!-- ==================== 7. РЕЖИМ ИНКОГНИТО ==================== -->
+        <div class="section-divider" id="sec-incognito">
+            <hr class="divider-line">
+            <h2 class="divider-title">🕵️ Виртуальный режим «Инкогнито» (В.Р.И.)</h2>
+            <p class="divider-sub">Автоматический просмотр регионально заблокированных страниц, локальный список желаемого и разблокировка виджетов.</p>
+            <hr class="divider-line">
+        </div>
+
+        <main class="space-y-4">
+            <details>
+                <summary>Обход блокировок, локальное желаемое и разблокировка виджетов</summary>
+                <div class="details-content">
+                    <ul>
+                        <li><strong>Виртуальный режим «Инкогнито»:</strong> при обнаружении заглушки «Данный товар недоступен в вашем регионе» автоматически загружает страницу магазина или сообщества через выбранный регион В.Р.И. (с резервными <code>US, CH, KZ, JP</code>), обходом возрастного экрана и рабочим плеером трейлеров и скриншотов.</li>
+                        <li><strong>Локальное желаемое и статус библиотеки:</strong> на открытых через В.Р.И. страницах проверяет ваш реальный аккаунт Steam — отображает «В библиотеке» или возвращает кнопку «В желаемое» с сохранением в локальный список (раздельно по аккаунтам) и галерею «Управление недоступным желаемым». Если ранее добавленная в официальное желаемое игра стала недоступна, она автоматически переносится в локальный список.</li>
+                        <li><strong>Разблокировка виджетов Steam:</strong> находит встроенные iframe-виджеты (<code>store.steampowered.com/widget/</code>) с ошибкой недоступности и перезагружает их через регион В.Р.И.</li>
+                    </ul>
+                    <div class="shots-grid">
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/incognito-page.jpg" alt="Заблокированная страница игры, открытая в режиме Инкогнито" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Заблокированная страница игры, открытая в режиме Инкогнито</figcaption>
+                        </figure>
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/incognito-wishlist-btn.jpg" alt="Кнопки статуса библиотеки и локального желаемого" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Кнопки статуса библиотеки и локального желаемого</figcaption>
+                        </figure>
+                        <figure class="shot-card">
+                            <img src="assets/screenshots/incognito-wishlist-gallery.jpg" alt="Галерея «Недоступное желаемое»" class="feature-img" loading="lazy">
+                            <figcaption class="img-caption">Галерея «Недоступное желаемое»</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </details>
+        </main>
+
+        <!-- ==================== 8. НАСТРОЙКИ И БЭКАП ==================== -->
+        <div class="section-divider" id="sec-settings">
+            <hr class="divider-line">
+            <h2 class="divider-title">⚙ Настройки BSH и Единый бэкап</h2>
+            <hr class="divider-line">
+        </div>
+
+        <main class="space-y-4">
+            <details>
+                <summary>Центр управления модулями, мультиаккаунтность и резервное копирование</summary>
+                <div class="details-content">
+                    <ul>
+                        <li><strong>Кнопка ⚙ BSH в шапке Steam:</strong> открывает отдельное окно настроек с 7 категориями, живым поиском по параметрам, кнопкой подробной справки со скриншотами (<code>ⓘ</code>) напротив каждой опции и сбросом настроек к значениям по умолчанию.</li>
+                        <li><strong>Разделение по аккаунтам Steam:</strong> база Наблюдателя, локальный список желаемого и скрытые новости автоматически привязываются к текущему SteamID64 — при переключении аккаунта данные не смешиваются.</li>
+                        <li><strong>Единый бэкап (💾):</strong> выгрузка и восстановление в один JSON-файл всех настроек модулей и регионов, шаблонов фильтров, баз Наблюдателя, личных заметок, локального желаемого, скрытых новостей и исключений SalesMaster в режимах безопасного объединения (<em>merge</em>) или полной перезаписи (<em>overwrite</em>).</li>
                     </ul>
                 </div>
             </details>
         </main>
 
-        <div class="section-divider">
+        <!-- ==================== УСТАНОВКА ==================== -->
+        <div class="section-divider" id="sec-install">
             <hr class="divider-line">
-            <h2 class="divider-title">Установка и запуск (Beta)</h2>
+            <h2 class="divider-title">⬇ Установка и запуск (Beta)</h2>
             <hr class="divider-line">
         </div>
 
         <main class="space-y-4">
-            <details open>
+            <details>
                 <summary>Пошаговая инструкция по установке</summary>
                 <div class="details-content">
                     <ol>
-                        <li>Установите загрузчик <a href="https://steambrew.app/" target="_blank" style="color: #66c0f4; text-decoration: none;">Millennium</a> (версии <strong>3.6.3</strong> или новее) для клиента Steam.</li>
-                        <li>Скачайте файл <code>com.0wn3df1x.bibliotekarsha.star</code> со страницы <a href="https://github.com/0wn3dg0d/Bibliotekarsha/releases" target="_blank" style="color: #66c0f4; text-decoration: none;">GitHub Releases</a>.</li>
-                        <li>Откройте папку плагинов Millennium в директории Steam (по умолчанию: <code>D:\Program Files (x86)\Steam\millennium\plugins</code> или <code>C:\Program Files (x86)\Steam\millennium\plugins</code>) и перенесите туда скачанный файл.</li>
+                        <li>Установите загрузчик <a href="https://steambrew.app/" target="_blank" rel="noopener noreferrer" style="color: #66c0f4; text-decoration: none;">Millennium</a> (версии <strong>3.6.3</strong> или новее) для клиента Steam.</li>
+                        <li>Скачайте файл <code>com.0wn3df1x.bibliotekarsha.star</code> со страницы <a href="https://github.com/0wn3dg0d/Bibliotekarsha/releases" target="_blank" rel="noopener noreferrer" style="color: #66c0f4; text-decoration: none;">GitHub Releases</a>.</li>
+                        <li>Откройте папку плагинов Millennium в директории Steam (по умолчанию: <code>C:\Program Files (x86)\Steam\millennium\plugins</code>) и перенесите туда скачанный файл.</li>
                         <li>Запустите или перезапустите клиент Steam.</li>
-                        <li>В левом верхнем углу окна нажмите <strong>Steam → Настройки</strong>, перейдите в раздел <strong>Millennium</strong>, откройте вкладку <strong>Плагины</strong>, активируйте <strong>Bibliotekarsha (Beta)</strong> и нажмите <strong>Сохранить изменения</strong> (при необходимости подтвердите перезагрузку интерфейса).</li>
-                        <li>Перейдите в <strong>Библиотеку</strong> — автоматически начнётся фоновый сбор информации об играх. При нажатии на кнопку <strong>Bibliotekarsha</strong> (в панели фильтров слева или в верхней панели любой коллекции) в шапке открывшегося окна отображается текущий прогресс сбора в процентах. Собранная база сохраняется на <strong>14 дней</strong>, после чего данные автоматически обновляются в фоне.</li>
+                        <li>В левом верхнем углу окна нажмите <strong>Steam → Настройки → Millennium → Плагины</strong>, активируйте <strong>Bibliotekarsha (Beta)</strong> и нажмите <strong>Сохранить изменения</strong>.</li>
+                        <li>Перейдите в <strong>Библиотеку</strong> — автоматически начнётся фоновый сбор метаданных игр (прогресс отображается в шапке окна при нажатии на кнопку <strong>BSH</strong>). База сохраняется на <strong>14 дней</strong> и автоматически обновляется в фоне.</li>
                     </ol>
                 </div>
             </details>
         </main>
 
         <div class="warning-box">
-            <h3>Примечание о бета-версии (v0.6.0)</h3>
-            <div class="details-content" style="border: none; background: none; padding-top: 0.5rem;">
-                <p>Текущая сборка находится в стадии бета-тестирования и предназначена для десктопного режима клиента Steam (адаптация под Big Picture Mode планируется в следующих обновлениях).</p>
-            </div>
+            <h3>Примечание о бета-версии</h3>
+            <p style="margin: 0; text-align: center;">
+                Текущая сборка находится в стадии бета-тестирования и предназначена для десктопного режима клиента Steam (адаптация под Big Picture Mode планируется в будущих обновлениях).
+            </p>
         </div>
 
-        <footer class="text-center" style="margin-top: 4rem; padding: 1.5rem 0; border-top: 1px solid #3A3A3A;">
-            <p style="color: #8A8A8A;">Автор: 0wn3df1x<br>при поддержке <a href="https://www.zoneofgames.ru" style="color:#BFA65A; text-decoration: none;">ZoneOfGames.ru</a></p>
+        <footer class="text-center" style="margin-top: 3.5rem; padding: 1.5rem 0; border-top: 1px solid #3A3A3A;">
+            <p style="color: #8A8A8A; margin: 0;">Автор: 0wn3df1x<br>при поддержке <a href="https://www.zoneofgames.ru" target="_blank" rel="noopener noreferrer" style="color:#BFA65A; text-decoration: none;">ZoneOfGames.ru</a></p>
         </footer>
     </div>
+
+    <div id="bsh-lightbox" aria-hidden="true">
+        <button type="button" id="bsh-lightbox-close" title="Закрыть (Esc)">&times;</button>
+        <img id="bsh-lightbox-img" src="" alt="">
+        <div id="bsh-lightbox-caption"></div>
+    </div>
+
+    <script>
+        (function () {
+            const lb = document.getElementById('bsh-lightbox');
+            const lbImg = document.getElementById('bsh-lightbox-img');
+            const lbCap = document.getElementById('bsh-lightbox-caption');
+            const lbClose = document.getElementById('bsh-lightbox-close');
+
+            const closeLb = () => {
+                lb.classList.remove('open');
+                lb.setAttribute('aria-hidden', 'true');
+                lbImg.src = '';
+            };
+
+            document.querySelectorAll('.feature-img').forEach((img) => {
+                img.addEventListener('click', () => {
+                    lbImg.src = img.getAttribute('src') || '';
+                    lbImg.alt = img.getAttribute('alt') || '';
+                    lbCap.textContent = img.getAttribute('alt') || '';
+                    lb.classList.add('open');
+                    lb.setAttribute('aria-hidden', 'false');
+                });
+            });
+
+            lbImg.addEventListener('click', (e) => e.stopPropagation());
+            lb.addEventListener('click', closeLb);
+            lbClose.addEventListener('click', closeLb);
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && lb.classList.contains('open')) closeLb();
+            });
+        })();
+    </script>
 
 </body>
 </html>

@@ -1,9 +1,9 @@
 [plugin]
 id = "com.0wn3df1x.bibliotekarsha"
 name = "Bibliotekarsha (Beta)"
-version = "0.6.0"
+version = "0.7.0"
 author = "0wn3df1x"
-description = "Бета-версия плагина для библиотеки Steam: умная фильтрация по русской озвучке, субтитрам, раннему доступу, умным меткам (по весу и исключениям), годам, отзывам, рейтингу, шаблонам и поиск русификаторов ZOG."
+description = "Бета-версия плагина для библиотеки Steam: умная фильтрация по русской озвучке, субтитрам, раннему доступу, умным меткам, годам, отзывам, рейтингу, поиск русификаторов ZOG, Наблюдатель и Виртуальный режим Инкогнито."
 
 [backend]
 entry = "backend/main.lua"
@@ -11,6 +11,9 @@ sources = ["backend/**/*.lua"]
 
 [frontend]
 entry = "frontend/index.tsx"
+
+[webkit]
+entry = "webkit/index.tsx"
 
 [compiler]
 output_path = "auto"

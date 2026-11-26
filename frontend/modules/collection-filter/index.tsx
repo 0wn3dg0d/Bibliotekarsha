@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { afterPatch, findModule, findModuleExport, replacePatch, type Patch } from 'millennium';
 import { formatLocDetail } from '../../config/tiers';
 import { BibliotekarshaModule } from '../../core/types';
-import { getLibraryPath } from '../../lib/steam';
+import { getLibraryPath, isSteamApp } from '../../lib/steam';
 import {
   isScopeFilterActive,
   matchesGameMeta,
@@ -23,7 +23,7 @@ function getCurrentCollectionScope(): { scope: string; title: string } {
 }
 
 function CollectionFilterButton({ appIds }: { appIds: number[] }) {
-  const [, rerender] = React.useReducer((n: number) => n + 1, 0);
+  const [tick, rerender] = React.useReducer((n: number) => n + 1, 0);
   const [modalOpen, setModalOpen] = useState(false);
 
   const { scope, title } = getCurrentCollectionScope();
@@ -39,7 +39,7 @@ function CollectionFilterButton({ appIds }: { appIds: number[] }) {
       if (changedScope === scope || changedScope === 'collection:*') rerender();
     });
     const unsubM = onMetaUpdate(() => {
-      if (modalOpen) rerender();
+      if (modalOpen || isScopeFilterActive(scope)) rerender();
     });
     return () => {
       unsubF();
@@ -62,10 +62,73 @@ function CollectionFilterButton({ appIds }: { appIds: number[] }) {
       }
     }
     return { collectionGames: games, totalMatched: matched };
-  }, [appIds.join(','), scope, active, modalOpen]);
+  }, [appIds.join(','), scope, active, modalOpen, tick]);
 
   return (
     <>
+      <style>{`
+  .bib-native-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 30px;
+    line-height: 30px !important;
+    padding: 0 12px !important;
+    margin: 0;
+    border-radius: 2px !important;
+    border: none !important;
+    background: rgba(103, 112, 123, 0.28) !important;
+    color: #dfe3e6 !important;
+    font-family: "Motiva Sans", Arial, sans-serif !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    cursor: pointer;
+    user-select: none;
+    box-sizing: border-box !important;
+    transition: background-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease !important;
+  }
+  .bib-native-btn:hover {
+    background: rgba(103, 112, 123, 0.48) !important;
+    color: #ffffff !important;
+  }
+  .bib-native-btn:active {
+    background: rgba(103, 112, 123, 0.2) !important;
+  }
+  .bib-native-btn.active {
+    background: rgba(103, 112, 123, 0.45) !important;
+    box-shadow: inset 0 0 0 1px rgba(102, 192, 244, 0.65) !important;
+    color: #ffffff !important;
+  }
+  .bib-native-btn.active:hover {
+    background: rgba(103, 112, 123, 0.62) !important;
+  }
+  .bib-native-btn-col {
+    height: 28px;
+    line-height: 28px !important;
+  }
+  .bib-native-btn-reset {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 2px !important;
+    border: none !important;
+    background: rgba(103, 112, 123, 0.28) !important;
+    color: #b8bcbf !important;
+    font-size: 15px !important;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background-color 0.16s ease, color 0.16s ease !important;
+  }
+  .bib-native-btn-reset:hover {
+    background: rgba(191, 64, 64, 0.55) !important;
+    color: #ffffff !important;
+  }
+`}</style>
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
@@ -77,37 +140,33 @@ function CollectionFilterButton({ appIds }: { appIds: number[] }) {
       >
         <button
           type="button"
+          className={`DialogButton _DialogLayout Secondary bib-native-btn bib-native-btn-col ${active ? 'active' : ''}`}
           onClick={() => {
             requestManyMeta(appIds);
             setModalOpen(true);
           }}
           title="Открыть фильтры Bibliotekarsha для этой коллекции"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '0 11px',
-            height: '28px',
-            borderRadius: '3px',
-            border: active ? '1px solid #66c0f4' : '1px solid rgba(255,255,255,0.14)',
-            backgroundColor: active ? 'rgba(102, 192, 244, 0.22)' : 'rgba(103, 112, 123, 0.25)',
-            color: active ? '#ffffff' : '#dfe3e6',
-            fontSize: '12px',
-            fontWeight: 500,
-            cursor: 'pointer',
-            whiteSpace: 'nowrap',
-          }}
         >
-          <span>Bibliotekarsha</span>
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 16 16"
+            fill="currentColor"
+            style={{ flexShrink: 0, opacity: 0.9 }}
+          >
+            <path d="M1.5 2h13a.5.5 0 0 1 .38.82L10 8.52v4.73a.5.5 0 0 1-.28.45l-3 1.5A.5.5 0 0 1 6 14.75V8.52L1.12 2.82A.5.5 0 0 1 1.5 2z" />
+          </svg>
+          <span>BSH</span>
           {active && (
             <span
               style={{
-                backgroundColor: '#66c0f4',
-                color: '#0e141b',
+                backgroundColor: 'rgba(102, 192, 244, 0.22)',
+                color: '#b8e2fc',
                 borderRadius: '8px',
                 padding: '0 6px',
                 fontSize: '10px',
                 fontWeight: 700,
+                lineHeight: '16px',
               }}
             >
               {totalMatched}/{appIds.length}
@@ -118,18 +177,9 @@ function CollectionFilterButton({ appIds }: { appIds: number[] }) {
         {active && (
           <button
             type="button"
+            className="bib-native-btn-reset"
             onClick={() => resetScopeFilters(scope)}
             title="Сбросить фильтр коллекции"
-            style={{
-              height: '28px',
-              padding: '0 8px',
-              borderRadius: '3px',
-              border: '1px solid rgba(255,255,255,0.14)',
-              backgroundColor: 'rgba(167, 67, 67, 0.35)',
-              color: '#ff9b9b',
-              fontSize: '13px',
-              cursor: 'pointer',
-            }}
           >
             ×
           </button>
@@ -241,7 +291,7 @@ function filterCollectionSections(zeFiber: any, scope: string): number[] {
     if (!Array.isArray(sec?.children)) continue;
     sec.children = sec.children.filter((item: any) => {
       const appId = item?.m_overview?.appid;
-      if (typeof appId !== 'number') return true;
+      if (typeof appId !== 'number' || !isSteamApp(appId)) return true;
       const meta = cachedMeta(appId);
       if (!meta) return false;
       return matchesGameMeta(scope, meta);
@@ -324,8 +374,15 @@ function initCollectionFilter(): () => void {
           }
           const meta = cachedMeta(props.app.appid);
           if (!meta) return vdom;
-          vdom.props.children.splice(1, 0, <div className={cachedSubscriptClass}>{formatLocDetail(meta)}</div>);
-          return vdom;
+          const nextChildren = [...vdom.props.children];
+          nextChildren.splice(
+            1,
+            0,
+            <div key="bib-loc-subscript" className={cachedSubscriptClass}>
+              {formatLocDetail(meta)}
+            </div>
+          );
+          return React.cloneElement(vdom, { children: nextChildren });
         })
       );
     }

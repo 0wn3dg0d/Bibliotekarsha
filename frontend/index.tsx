@@ -1,3 +1,4 @@
+import './services/steamAuthSync';
 import { definePlugin } from 'millennium';
 import { ALL_MODULES } from './modules/registry';
 import { requestAllLibraryMeta } from './stores/localization';
@@ -9,7 +10,7 @@ export default definePlugin(() => {
 
   const activeGlobalCleanups = new Map<string, () => void>();
   const activeDocCleanups = new Map<Document, Map<string, () => void>>();
-  let lastKnownLibCount = 0;
+  let metaSyncTick = 0;
 
   const syncGlobalModules = () => {
     for (const mod of ALL_MODULES) {
@@ -54,7 +55,22 @@ export default definePlugin(() => {
 
   syncGlobalModules();
 
+  const pruneClosedDocuments = () => {
+    for (const [doc, docMap] of Array.from(activeDocCleanups.entries())) {
+      const win = doc.defaultView;
+      if (!win || win.closed) {
+        docMap.forEach((cleanup) => {
+          try {
+            cleanup();
+          } catch {}
+        });
+        activeDocCleanups.delete(doc);
+      }
+    }
+  };
+
   const unsubSettings = subscribeSettings(() => {
+    pruneClosedDocuments();
     syncGlobalModules();
     for (const doc of Array.from(activeDocCleanups.keys())) {
       syncDocumentModules(doc);
@@ -62,15 +78,16 @@ export default definePlugin(() => {
   });
 
   const tick = async () => {
+    pruneClosedDocuments();
     const popup = window.g_PopupManager?.GetExistingPopup?.('SP Desktop_uid0');
     const doc = popup?.m_popup?.document;
-    if (doc) {
+    if (doc && doc.defaultView && !doc.defaultView.closed) {
       syncDocumentModules(doc);
     }
-    const count = await requestAllLibraryMeta();
-    if (count > lastKnownLibCount) {
-      lastKnownLibCount = count;
+    if (metaSyncTick === 0 || metaSyncTick % 8 === 0) {
+      await requestAllLibraryMeta();
     }
+    metaSyncTick++;
   };
 
   const interval = setInterval(tick, 2000);

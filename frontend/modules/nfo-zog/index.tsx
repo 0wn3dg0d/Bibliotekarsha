@@ -60,19 +60,20 @@ async function findGamesOnZog(gameName: string) {
   const isRussian = /[а-яё]/i.test(gameName);
   const activeMap = isRussian ? russianAlphabetMap : alphabetMap;
   const articles = ['the', 'a', 'an'];
-  const words = gameName.toLowerCase().split(' ');
+  const words = gameName.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const searchLetters = new Set<string>();
 
   if (!isRussian && articles.includes(words[0]) && words.length > 1) {
     searchLetters.add(words[0][0]);
     if (activeMap[words[1][0]] !== undefined) searchLetters.add(words[1][0]);
   } else {
-    const firstChar = gameName.toLowerCase().charAt(0);
+    const firstChar = gameName.trim().toLowerCase().charAt(0);
     searchLetters.add(Object.prototype.hasOwnProperty.call(activeMap, firstChar) ? firstChar : '#');
   }
 
   const allGames: Array<{ title: string; path: string }> = [];
   const uniquePaths = new Set<string>();
+  let anyFetched = false;
 
   for (const letter of searchLetters) {
     const isNonAlpha = letter === '#';
@@ -85,8 +86,9 @@ async function findGamesOnZog(gameName: string) {
       : 'https://www.zoneofgames.ru/games/eng/';
     const url = `${baseUrl}${pageNum}/`;
 
-    const res = await smartFetch(url);
+    const res = await smartFetch(url, { headers: { Referer: 'https://www.zoneofgames.ru/' } });
     if (!res.ok || !res.text) continue;
+    anyFetched = true;
     const doc = new DOMParser().parseFromString(res.text, 'text/html');
     doc.querySelectorAll('td.gameinfoblock a').forEach((link) => {
       const path = link.getAttribute('href');
@@ -100,6 +102,9 @@ async function findGamesOnZog(gameName: string) {
     });
   }
 
+  if (!anyFetched && searchLetters.size > 0) {
+    throw new Error('ZOG network error');
+  }
   return allGames;
 }
 
@@ -113,12 +118,18 @@ function ZogSectionView({ appId }: { appId: number }) {
   } | null>(null);
   const [loadingLocs, setLoadingLocs] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [retryTick, setRetryTick] = useState(0);
+
+  const handleRefresh = () => {
+    zogSessionCache.delete(appId);
+    setRetryTick((n) => n + 1);
+  };
 
   const loadLocalizations = async (gamePath: string, allRanked: any[]) => {
     setLoadingLocs(true);
     const fullUrl = `https://www.zoneofgames.ru${gamePath}`;
     try {
-      const res = await smartFetch(fullUrl);
+      const res = await smartFetch(fullUrl, { headers: { Referer: 'https://www.zoneofgames.ru/' } });
       if (!res.ok || !res.text) throw new Error('Failed');
       const doc = new DOMParser().parseFromString(res.text, 'text/html');
       const localizations: Array<{ name: string; size: string; link: string }> = [];
@@ -206,9 +217,7 @@ function ZogSectionView({ appId }: { appId: number }) {
         }
       } catch {
         if (!cancelled) {
-          const msg = 'Ошибка соединения с Zone of Games.';
-          setError(msg);
-          zogSessionCache.set(appId, { error: msg });
+          setError('Ошибка соединения с Zone of Games.');
         }
       }
     };
@@ -217,10 +226,17 @@ function ZogSectionView({ appId }: { appId: number }) {
     return () => {
       cancelled = true;
     };
-  }, [appId]);
+  }, [appId, retryTick]);
 
   if (error) {
-    return <div style={{ color: '#8f98a0' }}>{error}</div>;
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', color: '#8f98a0' }}>
+        <span>{error}</span>
+        <button type="button" onClick={handleRefresh} className="bib-nfo-pill-btn" title="Повторить запрос">
+          ⟳
+        </button>
+      </div>
+    );
   }
 
   if (loadingLocs) {
@@ -235,7 +251,7 @@ function ZogSectionView({ appId }: { appId: number }) {
             href={selectedLocs.url}
             target="_blank"
             rel="noreferrer"
-            style={{ color: '#66c0f4', fontWeight: 700, textDecoration: 'none', fontSize: '14px' }}
+            className="bib-nfo-link" style={{ fontWeight: 700, fontSize: '14px' }}
           >
             {selectedLocs.title} ↗
           </a>
@@ -243,16 +259,7 @@ function ZogSectionView({ appId }: { appId: number }) {
             <button
               type="button"
               onClick={() => setSelectedLocs(null)}
-              style={{
-                background: '#1f2937',
-                border: '1px solid #354457',
-                color: '#c6d4df',
-                padding: '2px 8px',
-                borderRadius: '3px',
-                cursor: 'pointer',
-                fontSize: '11px',
-                flexShrink: 0,
-              }}
+              className="bib-nfo-pill-btn"
             >
               Другие совпадения
             </button>
@@ -269,18 +276,7 @@ function ZogSectionView({ appId }: { appId: number }) {
                 href={loc.link}
                 target="_blank"
                 rel="noreferrer"
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '8px 10px',
-                  backgroundColor: '#161d26',
-                  border: '1px solid #263241',
-                  borderRadius: '4px',
-                  color: '#e2e8f0',
-                  textDecoration: 'none',
-                }}
+                className="bib-nfo-item-row"
               >
                 <span>{loc.name}</span>
                 {loc.size && (
@@ -304,17 +300,7 @@ function ZogSectionView({ appId }: { appId: number }) {
           <div
             key={m.path}
             onClick={() => loadLocalizations(m.path, matches)}
-            style={{
-              padding: '7px 10px',
-              backgroundColor: '#161d26',
-              border: '1px solid #263241',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              gap: '8px',
-            }}
+            className="bib-nfo-item-row" style={{ cursor: 'pointer' }}
           >
             <span style={{ color: '#e2e8f0' }}>{m.title}</span>
             <span

@@ -1,6 +1,6 @@
 {
   "name": "bibliotekarsha",
-  "version": "0.6.0-beta",
+  "version": "0.7.0",
   "scripts": {
     "dev": "starlight watch",
     "build": "starlight pack --release",
@@ -10,5 +10,10 @@
     "@types/react": "19.1.1",
     "@types/react-dom": "19.1.1",
     "@steambrew/starlight": "^1.1.7"
+  },
+  "dependencies": {
+    "chart.js": "^4.6.2",
+    "chartjs-plugin-datalabels": "^2.2.0",
+    "hls.js": "^1.7.4"
   }
 }

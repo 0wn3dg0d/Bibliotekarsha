@@ -1,6 +1,6 @@
-import { callable } from 'millennium';
+import { ffi } from 'millennium';
 
-const backendFetch = callable<[{ options_json: string }], string>('fetch_url');
+const backendFetch = ffi<[options_json: string], string>('fetch_url');
 
 export interface SmartFetchResponse {
   ok: boolean;
@@ -13,15 +13,19 @@ export async function smartFetch(
   options?: { method?: string; headers?: Record<string, string>; body?: string }
 ): Promise<SmartFetchResponse> {
   try {
-    const raw = await backendFetch({
-      options_json: JSON.stringify({
-        url,
-        method: options?.method || 'GET',
-        headers: options?.headers || {},
-        body: options?.body || '',
-      }),
-    });
-    const parsed = JSON.parse(raw);
+    const payload: Record<string, any> = {
+      url,
+      method: options?.method || 'GET',
+      headers: {
+        'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+        ...(options?.headers || {}),
+      },
+    };
+    if (options?.body) {
+      payload.body = options.body;
+    }
+    const raw: any = await backendFetch(JSON.stringify(payload));
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
     return {
       ok: Boolean(parsed?.ok),
       status: Number(parsed?.status) || 0,
